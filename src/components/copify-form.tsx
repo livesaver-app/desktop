@@ -61,7 +61,7 @@ export const CopifyForm = () => {
   }
 
   return (
-    <div>
+    <div className={"px-4"}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <FormField

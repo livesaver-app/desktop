@@ -1,10 +1,11 @@
 import { Dashboard } from '@/app/dashboard/page.tsx'
+import { ThemeProvider } from '@/components/theme-provider.tsx'
 
 function App() {
   return (
-    <div>
+    <ThemeProvider defaultTheme={"dark"} storageKey={"vite-ui-theme"}>
       <Dashboard />
-    </div>
+    </ThemeProvider>
   )
 }
 
