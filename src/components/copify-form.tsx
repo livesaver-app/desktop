@@ -14,8 +14,23 @@ import {
   FormMessage
 } from '@/components/ui/form.tsx'
 import { Input } from '@/components/ui/input.tsx'
+import { useEffect, useState } from 'react'
+import { listen } from '@tauri-apps/api/event'
+import { Progress } from '@/components/ui/progress.tsx'
 
 export const CopifyForm = () => {
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const unlisten = listen('copify-progress', (event) => {
+      setProgress(event.payload as number)
+    })
+
+    return () => {
+      unlisten.then((f) => f())
+    }
+  }, [])
+
   const formSchema = z.object({
     folder: z.string().min(1, {
       message: 'You need to choose a folder.'
@@ -72,6 +87,7 @@ export const CopifyForm = () => {
           <Button type="submit">Start</Button>
         </form>
       </Form>
+      {progress > 0 && <Progress value={progress} className="w-full my-4" />}
     </div>
   )
 }
