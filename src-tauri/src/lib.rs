@@ -7,7 +7,6 @@ use std::fs::{rename, File};
 use std::io::{self, BufReader, BufWriter, Write, Read};
 use std::{fs, thread};
 use std::borrow::Cow;
-use std::ptr::null;
 use std::time::Duration;
 use pathdiff::diff_paths;
 use serde::{Deserialize, Serialize};
@@ -34,6 +33,8 @@ impl Default for CopifySettings {
     }
 }
 
+static SAMPLES_IMPORTED: &str = "Samples/Imported/";
+
 #[tauri::command]
 async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
     let settings = CopifySettings::default();
@@ -49,7 +50,7 @@ async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
         }
         decompress(file_path, xml.as_path());
         update_sample_refs(xml.as_path(), &settings);
-        //compress(xml.as_path(), file_path);
+        compress(xml.as_path(), file_path);
         window.emit("copify-progress", ((i + 1) * 100) / files.len()).unwrap();
     }
     Ok(println!("Finished"))
@@ -70,10 +71,12 @@ fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> io::Result<
 
     let mut buf = Vec::new();
     let mut inside_sample_ref = false;
-    let mut relative: String = "".parse().unwrap();
 
     loop {
         match reader.read_event_into(&mut buf) {
+            Ok(Event::Decl(ref e)) => {
+                writer.write_event(Event::Decl(e.clone()));
+            }
             Ok(Event::Start(ref e)) => {
                 let tag = reader.decoder().decode(e.name().0).unwrap().to_string();
                 if tag == "SampleRef" {
@@ -89,16 +92,13 @@ fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> io::Result<
                     if let Some(path_value) = get_value_attribute(&path_element, settings) {
                         let sanitized = decode_xml_value(&path_value);
                         let absolute = copy_sample(&sanitized, dir).unwrap();
-                        relative = find_relative_path(dir.to_str().unwrap(), &absolute);
-
                         modify_value_attribute(&mut path_element, "Value", &absolute);
-                        //modify_value_attribute(&mut path_element, "RelativePath", &relative);
                     }
                     writer.write_event(Event::Empty(path_element));
                 } else if tag == "RelativePath" && inside_sample_ref {
                     let mut path_element = e.clone();
-                    if !relative.is_empty() {
-                        modify_value_attribute(&mut path_element, "Value", &relative);
+                    if let Some(path_value) = get_value_attribute(&path_element, settings) {
+                        modify_value_attribute(&mut path_element, "Value", format!("{}{}", SAMPLES_IMPORTED, get_last_segment(&path_value)).as_str());
                     }
                     writer.write_event(Event::Empty(path_element));
                 } else {
@@ -132,6 +132,10 @@ fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> io::Result<
     rename(&temp_path, xml_path)?;
 
     Ok(())
+}
+
+fn get_last_segment(path: &str) -> &str {
+    path.split("/").last().unwrap()
 }
 
 // Helper function to modify the Value attribute in Path element
@@ -197,6 +201,11 @@ fn sanitize_for_xml(value: &str) -> String {
 
 fn decode_xml_value(value: &str) -> String {
     value.replace("&amp;", "&")
+}
+
+fn absolute_path_from_base(base_folder: &Path, relative_path: &Path) -> io::Result<PathBuf> {
+    let combined_path = base_folder.join(relative_path);
+    combined_path.canonicalize()
 }
 
 fn copy_sample(sample: &str, project_root: &Path) -> io::Result<String> {
