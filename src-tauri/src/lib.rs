@@ -7,6 +7,7 @@ use std::fs::{rename, File};
 use std::io::{self, BufReader, BufWriter, Write, Read};
 use std::{fs, thread};
 use std::borrow::Cow;
+use std::ops::Deref;
 use std::time::Duration;
 use pathdiff::diff_paths;
 use serde::{Deserialize, Serialize};
@@ -51,6 +52,7 @@ async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
         decompress(file_path, xml.as_path());
         update_sample_refs(xml.as_path(), &settings);
         compress(xml.as_path(), file_path);
+        fs::remove_file(xml);
         window.emit("copify-progress", ((i + 1) * 100) / files.len()).unwrap();
     }
     Ok(println!("Finished"))
