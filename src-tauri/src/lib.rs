@@ -45,7 +45,7 @@ async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
         let mut xml = file_path.clone();
         xml.set_extension("xml");
 
-        thread::sleep(Duration::from_secs(1));
+        //thread::sleep(Duration::from_secs(1));
         if (settings.create_backup) {
             create_backup(file_path);
         }
