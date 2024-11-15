@@ -1,21 +1,21 @@
-use std::fmt::{Debug};
-use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
-use flate2::write::{GzEncoder, GzDecoder};
+use flate2::write::{GzDecoder, GzEncoder};
 use flate2::Compression;
-use std::fs::{rename, File};
-use std::io::{self, BufReader, BufWriter, Write, Read};
-use std::{fs, thread};
-use std::borrow::Cow;
-use std::ops::Deref;
-use std::time::Duration;
 use pathdiff::diff_paths;
-use serde::{Deserialize, Serialize};
-use tauri::{Emitter};
-use quick_xml::{Reader, Writer};
-use quick_xml::events::{BytesStart, Event};
 use quick_xml::events::attributes::Attribute;
+use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::QName;
+use quick_xml::{Reader, Writer};
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+use std::fmt::Debug;
+use std::fs::{rename, File};
+use std::io::{self, BufReader, BufWriter, Read, Write};
+use std::ops::Deref;
+use std::path::{Path, PathBuf};
+use std::time::Duration;
+use std::{fs, thread};
+use tauri::Emitter;
+use walkdir::WalkDir;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CopifySettings {
@@ -46,14 +46,16 @@ async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
         xml.set_extension("xml");
 
         //thread::sleep(Duration::from_secs(1));
-        if (settings.create_backup) {
+        if settings.create_backup {
             create_backup(file_path);
         }
         decompress(file_path, xml.as_path());
         update_sample_refs(xml.as_path(), &settings);
         compress(xml.as_path(), file_path);
         fs::remove_file(xml);
-        window.emit("copify-progress", ((i + 1) * 100) / files.len()).unwrap();
+        window
+            .emit("copify-progress", ((i + 1) * 100) / files.len())
+            .unwrap();
     }
     Ok(println!("Finished"))
 }
@@ -100,7 +102,12 @@ fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> io::Result<
                 } else if tag == "RelativePath" && inside_sample_ref {
                     let mut path_element = e.clone();
                     if let Some(path_value) = get_value_attribute(&path_element, settings) {
-                        modify_value_attribute(&mut path_element, "Value", format!("{}{}", SAMPLES_IMPORTED, get_last_segment(&path_value)).as_str());
+                        modify_value_attribute(
+                            &mut path_element,
+                            "Value",
+                            format!("{}{}", SAMPLES_IMPORTED, get_last_segment(&path_value))
+                                .as_str(),
+                        );
                     }
                     writer.write_event(Event::Empty(path_element));
                 } else {
@@ -187,7 +194,9 @@ fn get_value_attribute(e: &BytesStart, settings: &CopifySettings) -> Option<Stri
                 return if (settings.exclude_serum_noises) {
                     if (key?.contains("Serum Presets/Noises")) {
                         None
-                    } else { Some(String::from_utf8_lossy(&attr.value).into_owned()) }
+                    } else {
+                        Some(String::from_utf8_lossy(&attr.value).into_owned())
+                    }
                 } else {
                     Some(String::from_utf8_lossy(&attr.value).into_owned())
                 };
@@ -249,8 +258,12 @@ fn create_backup(input: &Path) -> Result<(), io::Error> {
         println!("Input file is not valid to backup")
     }
 
-    let dir = input.parent().ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file path"))?;
-    let filename = input.file_name().ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file path"))?;
+    let dir = input
+        .parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file path"))?;
+    let filename = input
+        .file_name()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file path"))?;
 
     // Construct the backup filename with the suffix appended
     let backup_filename = format!(
@@ -309,9 +322,7 @@ fn find_als_files(folder: &str) -> Vec<PathBuf> {
         return als_files;
     }
 
-    for entry in WalkDir::new(folder)
-        .into_iter()
-        .filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(folder).into_iter().filter_map(|e| e.ok()) {
         let entry_path = entry.path();
         if entry_path.is_file() {
             if let Some(extension) = entry_path.extension() {

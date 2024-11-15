@@ -16,11 +16,23 @@
         "width": 800,
         "height": 600,
         "resizable": true,
+        "decorations": true,
         "titleBarStyle": "Overlay"
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "draggable-window",
+          "windows": [
+            "*"
+          ],
+          "permissions": [
+            "core:window:allow-start-dragging"
+          ]
+        }
+      ]
     }
   },
   "bundle": {
