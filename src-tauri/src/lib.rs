@@ -8,38 +8,26 @@ use quick_xml::{Reader, Writer};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fmt::Debug;
+use std::fs;
 use std::fs::{rename, File};
 use std::io::{self, BufReader, BufWriter, Read, Write};
-use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
-use std::{fs, thread};
 use tauri::Emitter;
 use walkdir::WalkDir;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CopifySettings {
-    exclude_serum_noises: bool,
-    move_samples: bool,
-    create_backup: bool,
-}
-
-impl Default for CopifySettings {
-    fn default() -> Self {
-        CopifySettings {
-            exclude_serum_noises: true,
-            move_samples: false,
-            create_backup: false,
-        }
-    }
+    pub serum_noises: bool,
+    pub move_samples: bool,
+    pub create_backup: bool,
+    pub folder: String,
 }
 
 static SAMPLES_IMPORTED: &str = "Samples/Imported/";
 
 #[tauri::command]
-async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
-    let settings = CopifySettings::default();
-    let files = find_als_files(folder);
+async fn copify(window: tauri::Window, mut settings: CopifySettings) -> Result<(), String> {
+    let files = find_als_files(settings.folder.as_str());
     for (i, file_path) in files.iter().enumerate() {
         // Define the output file path by replacing the extension
         let mut xml = file_path.clone();
@@ -47,12 +35,12 @@ async fn copify(window: tauri::Window, folder: &str) -> Result<(), String> {
 
         //thread::sleep(Duration::from_secs(1));
         if settings.create_backup {
-            create_backup(file_path);
+            let _ = create_backup(file_path);
         }
-        decompress(file_path, xml.as_path());
-        update_sample_refs(xml.as_path(), &settings);
-        compress(xml.as_path(), file_path);
-        fs::remove_file(xml);
+        let _ = decompress(file_path, xml.as_path());
+        let _ = update_sample_refs(xml.as_path(), &settings);
+        let _ = compress(xml.as_path(), file_path);
+        let _ = fs::remove_file(xml);
         window
             .emit("copify-progress", ((i + 1) * 100) / files.len())
             .unwrap();
@@ -191,8 +179,8 @@ fn get_value_attribute(e: &BytesStart, settings: &CopifySettings) -> Option<Stri
         if let Ok(attr) = attribute {
             if attr.key == quick_xml::name::QName(b"Value") {
                 let key = Some(String::from_utf8_lossy(&attr.value).into_owned());
-                return if (settings.exclude_serum_noises) {
-                    if (key?.contains("Serum Presets/Noises")) {
+                return if settings.serum_noises {
+                    if key?.contains("Serum Presets/Noises") {
                         None
                     } else {
                         Some(String::from_utf8_lossy(&attr.value).into_owned())

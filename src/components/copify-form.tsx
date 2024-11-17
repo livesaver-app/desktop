@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Control, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button.tsx'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input.tsx'
 import { useEffect, useState } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { Progress } from '@/components/ui/progress.tsx'
+import { Checkbox } from './ui/checkbox'
 
 export const CopifyForm = () => {
   const [progress, setProgress] = useState(0)
@@ -34,7 +35,10 @@ export const CopifyForm = () => {
   const formSchema = z.object({
     folder: z.string().min(1, {
       message: 'You need to choose a folder.'
-    })
+    }),
+    serum_noises: z.boolean().default(false),
+    move_samples: z.boolean().default(false), // Default to false, cause we only want to copy if not specified to actually move the files
+    create_backup: z.boolean().default(false)
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
@@ -56,12 +60,16 @@ export const CopifyForm = () => {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const test = await invoke('copify', { folder: values.folder })
-    console.log(test)
+    console.log({ settings: values })
+    await invoke('copify', { settings: values })
   }
 
   return (
-    <div className={"px-4"}>
+    <div className={'px-4'}>
+      <p className="text-sm text-muted-foreground py-4">
+        Copify will copy/move samples from a project into its own folder so its easy to migrate
+        projects from machine to machine.
+      </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
@@ -84,10 +92,61 @@ export const CopifyForm = () => {
               </FormItem>
             )}
           />
+          <div className="flex flex-col">
+            <Checker
+              control={form.control}
+              name="serum_noises"
+              title="Include Serum noises"
+              desc="Default, we don't modify Serum noises as it can interfere with other projects. But you can include them if you want to."
+            />
+            <Checker
+              control={form.control}
+              name="move_samples"
+              title="Move samples"
+              desc="Move the samples? (Deafult is copy, move can interfere with other projects)"
+            />
+            <Checker
+              control={form.control}
+              name="create_backup"
+              title="Backup"
+              desc="Create a backup of the .als files?"
+            />
+          </div>
           <Button type="submit">Start</Button>
         </form>
       </Form>
       {progress > 0 && <Progress value={progress} className="w-full my-4" />}
     </div>
+  )
+}
+
+const Checker = ({
+  control,
+  name,
+  title,
+  desc
+}: {
+  control: Control<any>
+  name: string
+  title: string
+  desc: string
+}) => {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="py-2">
+          <div className="flex items-center space-x-2">
+            <FormLabel>{title}</FormLabel>
+            <FormControl>
+              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+            </FormControl>
+          </div>
+          <FormDescription>{desc}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   )
 }
