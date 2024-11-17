@@ -135,22 +135,26 @@ const data = {
     {
       name: 'Dashboard',
       url: '/',
-      icon: LifeBuoy
+      icon: LifeBuoy,
+      disabled: false
     },
     {
       name: 'Copify',
       url: '/copify',
-      icon: Frame
+      icon: Frame,
+      disabled: false
     },
     {
       name: 'Mover',
       url: '/mover',
-      icon: PieChart
+      icon: PieChart,
+      disabled: true
     },
     {
       name: 'Backup',
       url: 'backup',
-      icon: Map
+      icon: Map,
+      disabled: true
     }
   ]
 }

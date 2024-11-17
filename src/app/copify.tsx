@@ -21,7 +21,7 @@ export function Copify() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">Livesaver</BreadcrumbLink>
+                <BreadcrumbLink href="/">Livesaver</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>

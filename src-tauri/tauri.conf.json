@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "",
-        "width": 800,
-        "height": 600,
+        "width": 1000,
+        "height": 800,
         "resizable": true,
         "decorations": true,
         "titleBarStyle": "Overlay"
@@ -25,14 +25,12 @@
       "capabilities": [
         {
           "identifier": "draggable-window",
-          "windows": [
-            "*"
-          ],
+          "windows": ["*"],
           "permissions": [
             "core:window:allow-start-dragging",
             "dialog:allow-open",
             "dialog:default",
-            "core:event:allow-listen", 
+            "core:event:allow-listen",
             "core:event:default"
           ]
         }
