@@ -1,6 +1,6 @@
 # 🎵 LiveSaver
 
-![LiveSaver Logo](assets/icon.png)  
+![LiveSaver Logo](assets/icon.ico)  
 **Open-source Ableton Live sample export and organization tool**
 
 ---
