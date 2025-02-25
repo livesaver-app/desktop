@@ -10,7 +10,7 @@ use super::constants::*;
 
 #[tauri::command]
 pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), String> {
-    let files = find_by_extension(settings.folder.as_str(), "als");
+    let files = find_by_extension(settings.folder.as_str(), ALS);
 
     if files.is_empty() {
         return Err("No Ableton Live project files found".to_string());
