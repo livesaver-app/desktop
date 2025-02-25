@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use flate2::write::{GzDecoder, GzEncoder};
 use flate2::Compression;
 use pathdiff::diff_paths;
@@ -7,7 +8,7 @@ use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-pub fn copy_sample(sample: &str, project_root: &Path) -> io::Result<String> {
+pub fn copy_sample(sample: &str, project_root: &Path) -> Result<String> {
     let filename = Path::new(sample).file_name().unwrap();
     let destination = project_root.join("Samples").join("Imported");
 
@@ -19,7 +20,7 @@ pub fn copy_sample(sample: &str, project_root: &Path) -> io::Result<String> {
     Ok(dest_file.to_string_lossy().into_owned())
 }
 
-pub fn compress(input: &Path, output: &Path) -> io::Result<()> {
+pub fn compress(input: &Path, output: &Path) -> Result<()> {
     let input_file = File::open(input)?;
     let buffered_reader = BufReader::new(input_file);
 
@@ -33,7 +34,7 @@ pub fn compress(input: &Path, output: &Path) -> io::Result<()> {
     Ok(())
 }
 
-pub fn decompress(input: &Path, output: &Path) -> io::Result<()> {
+pub fn decompress(input: &Path, output: &Path) -> Result<()> {
     // Open the compressed input file
     let input_file = File::open(input)?;
     let buffered_reader = BufReader::new(input_file);
@@ -79,8 +80,7 @@ pub fn get_last_segment(path: &str) -> &str {
 }
 
 pub fn absolute_path_from_base(base_folder: &Path, relative_path: &Path) -> io::Result<PathBuf> {
-    let combined_path = base_folder.join(relative_path);
-    combined_path.canonicalize()
+    return base_folder.join(relative_path).canonicalize();
 }
 
 pub fn find_relative_path(base_folder: &str, absolute_path: &str) -> String {

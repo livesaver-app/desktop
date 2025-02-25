@@ -13,7 +13,7 @@ use std::io::BufWriter;
 use std::io::Write;
 use std::path::Path;
 
-pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> io::Result<()> {
+pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<(), io::Error> {
     let dir = xml_path.parent().unwrap();
     let temp_path = dir.join("temp_output.xml");
 

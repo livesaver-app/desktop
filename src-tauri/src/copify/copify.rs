@@ -7,27 +7,28 @@ use std::path::Path;
 use tauri::Emitter;
 
 #[tauri::command]
-pub async fn copify(window: tauri::Window, mut settings: CopifySettings) -> Result<(), String> {
+pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), String> {
     let files = find_by_extension(settings.folder.as_str(), "als");
+
     for (i, file_path) in files.iter().enumerate() {
         // Define the output file path by replacing the extension
         let mut xml = file_path.clone();
         xml.set_extension("xml");
 
         if settings.create_backup {
-            let _ = create_backup(file_path);
+            create_backup(file_path).map_err(|e| e.to_string())?;
         }
 
-        let _ = decompress(file_path, xml.as_path());
-        let _ = update_sample_refs(xml.as_path(), &settings);
-        let _ = compress(xml.as_path(), file_path);
-        let _ = fs::remove_file(xml);
+        decompress(file_path, xml.as_path()).map_err(|e| e.to_string())?;
+        update_sample_refs(xml.as_path(), &settings).map_err(|e| e.to_string())?;
+        compress(xml.as_path(), file_path).map_err(|e| e.to_string())?;
+        fs::remove_file(xml).map_err(|e| e.to_string())?;
 
         window
             .emit("copify-progress", ((i + 1) * 100) / files.len())
             .unwrap();
     }
-    Ok(println!("Finished"))
+    Ok(())
 }
 
 fn create_backup(input: &Path) -> Result<(), io::Error> {
