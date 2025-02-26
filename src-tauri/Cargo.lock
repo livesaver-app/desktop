@@ -2008,6 +2008,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-dialog",
  "tauri-plugin-shell",
+ "thiserror 1.0.69",
  "walkdir",
 ]
 
