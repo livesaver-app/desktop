@@ -34,7 +34,7 @@ function App() {
   console.log(session)
   return (
     <ThemeProvider defaultTheme={'dark'} storageKey={'vite-ui-theme'}>
-      <DraggableTopBar />
+      {/* <DraggableTopBar /> */}
       {!session ? <Auth /> : <RouterProvider router={router} />}
     </ThemeProvider>
   )

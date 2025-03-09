@@ -34,7 +34,9 @@
             "dialog:default",
             "core:event:allow-listen",
             "core:event:default",
-            "shell:default"
+            "shell:default",
+            "oauth:allow-start",
+            "oauth:allow-cancel"
           ]
         }
       ]
