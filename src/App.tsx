@@ -3,10 +3,8 @@ import { ThemeProvider } from '@/components/theme-provider.tsx'
 import { DraggableTopBar } from '@/components/top-bar.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Copify } from './app/copify'
-import { useState, useEffect } from 'react'
-import { AuthSession } from '@supabase/supabase-js'
-import { supabase } from './supabaseClient'
 import Auth from './app/auth'
+import useAuth from './hooks/use-auth'
 
 const router = createBrowserRouter([
   {
@@ -20,22 +18,13 @@ const router = createBrowserRouter([
 ])
 
 function App() {
-  const [session, setSession] = useState<AuthSession | null>(null)
+  const { user } = useAuth()
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-  }, [])
-
-  console.log(session)
+  console.log(user)
   return (
     <ThemeProvider defaultTheme={'dark'} storageKey={'vite-ui-theme'}>
       {/* <DraggableTopBar /> */}
-      {!session ? <Auth /> : <RouterProvider router={router} />}
+      {!user ? <Auth /> : <RouterProvider router={router} />}
     </ThemeProvider>
   )
 }
