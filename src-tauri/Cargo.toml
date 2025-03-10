@@ -31,3 +31,4 @@ quick-xml = { version = "0.26", features = [
 serde-xml-rs = "0.5" # For XML serialization/deserialization if needed
 pathdiff = "0.2.0"
 thiserror = "1"
+tauri-plugin-oauth = "2"
