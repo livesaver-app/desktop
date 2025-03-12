@@ -1,6 +1,5 @@
 import { Dashboard } from '@/app/dashboard/page.tsx'
 import { ThemeProvider } from '@/components/theme-provider.tsx'
-import { DraggableTopBar } from '@/components/top-bar.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Copify } from './app/copify'
 import Auth from './app/auth'
@@ -19,11 +18,8 @@ const router = createBrowserRouter([
 
 function App() {
   const { user } = useAuth()
-
-  console.log(user)
   return (
     <ThemeProvider defaultTheme={'dark'} storageKey={'vite-ui-theme'}>
-      {/* <DraggableTopBar /> */}
       {!user ? <Auth /> : <RouterProvider router={router} />}
     </ThemeProvider>
   )
