@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { Command, Frame, LifeBuoy, Map, PieChart, Send } from 'lucide-react'
-
 import { NavProjects } from '@/components/nav-projects'
-import { NavSecondary } from '@/components/nav-secondary'
 import {
   Sidebar,
   SidebarContent,
@@ -16,11 +14,6 @@ import { ModeToggle } from '@/components/mode-toggle.tsx'
 import { NavUser } from './nav-user'
 
 const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg'
-  },
   navSecondary: [
     {
       title: 'Support',
@@ -84,10 +77,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

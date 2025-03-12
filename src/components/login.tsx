@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '@/supabaseClient'
 import { open } from '@tauri-apps/plugin-shell'
-import { invoke } from '@tauri-apps/api/core'
+// import { invoke } from '@tauri-apps/api/core'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,10 +10,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form.tsx'
+import { appUrl } from '@/lib/constants'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [_, setLoading] = useState(false)
-  const [port, setPort] = useState<number | null>(null)
+  // const [port, setPort] = useState<number | null>(null)
 
   const formSchema = z.object({
     username: z.string().min(1, {
@@ -73,107 +74,106 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setLoading
   }
 
-  const onProviderLogin = (provider: 'github') => async () => {
-    setLoading(true)
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        options: {
-          skipBrowserRedirect: true,
-          scopes: '',
-          redirectTo: `http://localhost:${port}`
-        },
-        provider: provider
-      })
+  // const onProviderLogin = (provider: 'github') => async () => {
+  //   setLoading(true)
+  //   try {
+  //     const { data, error } = await supabase.auth.signInWithOAuth({
+  //       options: {
+  //         skipBrowserRedirect: true,
+  //         scopes: '',
+  //         redirectTo: `http://localhost:${port}`
+  //       },
+  //       provider: provider
+  //     })
+  //
+  //     if (data.url) {
+  //       open(data.url)
+  //     } else {
+  //       alert(error?.message)
+  //     }
+  //     setLoading(false)
+  //   } catch (error) {
+  //     console.error('Error starting server', error)
+  //   }
+  // }
+  //
+  // function stopCurrentServer() {
+  //   if (port !== null) {
+  //     try {
+  //       invoke('stop_server', { port: port })
+  //       console.log(`Stopped server on port ${port}`)
+  //     } catch (error) {
+  //       console.error(`Error stopping server: ${error}`)
+  //     }
+  //     setPort(null)
+  //   }
+  // }
 
-      if (data.url) {
-        open(data.url)
-      } else {
-        alert(error?.message)
-      }
-      setLoading(false)
-    } catch (error) {
-      console.error('Error starting server', error)
-    }
-  }
-
-  function stopCurrentServer() {
-    if (port !== null) {
-      try {
-        invoke('stop_server', { port: port })
-        console.log(`Stopped server on port ${port}`)
-      } catch (error) {
-        console.error(`Error stopping server: ${error}`)
-      }
-      setPort(null)
-    }
-  }
-
-  async function startServerRust() {
-    stopCurrentServer()
-    try {
-      const port = await invoke<number>('start_server')
-      setPort(port)
-      return port
-    } catch (error) {
-      console.log('rust_error', error)
-    }
-  }
+  // async function startServerRust() {
+  //   stopCurrentServer()
+  //   try {
+  //     const port = await invoke<number>('start_server')
+  //     setPort(port)
+  //     return port
+  //   } catch (error) {
+  //     console.log('rust_error', error)
+  //   }
+  // }
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Login to LiveSaver</CardTitle>
           <CardDescription>Enter your email below to login to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleLogin)}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem className="py-4">
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="m@example.com" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem className="py-4">
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              <div className="flex flex-col gap-2">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem className="py-4">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="m@example.com" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="py-4">
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
                 <Button type="submit" className="w-full">
                   Login
                 </Button>
-                <Button
-                  onClick={() => onProviderLogin('github')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Login with GitHub
-                </Button>
+                {/* <Button */}
+                {/*   onClick={() => onProviderLogin('github')} */}
+                {/*   variant="outline" */}
+                {/*   className="w-full" */}
+                {/* > */}
+                {/*   Login with GitHub */}
+                {/* </Button> */}
               </div>
               <div className="mt-4 text-center text-sm">
                 Don&apos;t have an account?{' '}
-                <a href="#" className="underline underline-offset-4">
+                <span
+                  className="underline underline-offset-4 cursor-pointer"
+                  onClick={() => open(appUrl + '/signup')}
+                >
                   Sign up
-                </a>
+                </span>
               </div>
             </form>
           </Form>

@@ -1,19 +1,24 @@
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/supabaseClient'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { Profile } from '@/types/profile'
 
 interface IAuth {
   user: User | null
+  profile: Profile | null
   signIn: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   loading: boolean
+  isPremium: boolean
 }
 
 const AuthContext = createContext<IAuth>({
   user: null,
+  profile: null,
   signIn: async () => {},
   logout: async () => {},
-  loading: false
+  loading: false,
+  isPremium: false
 })
 
 interface AuthProviderProps {
@@ -24,6 +29,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [isPremium, setIsPremium] = useState<boolean>(false)
 
   useEffect(() => {
     setInitialLoading(true)
@@ -45,6 +52,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       authListener.subscription.unsubscribe()
     }
   }, [])
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single()
+      if (error) console.error(error)
+      if (data) {
+        setProfile(data)
+        setIsPremium(data.subscription_plan === 'premium')
+      }
+    }
+    if (user) getProfile()
+  }, [user])
 
   const signIn = async (email: string, password: string) => {
     setLoading(true)
@@ -76,11 +99,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const memoedValue = useMemo(
     () => ({
       user,
+      profile,
+      isPremium,
       signIn,
       logout,
       loading
     }),
-    [user, loading]
+    [user, profile, isPremium, loading]
   )
 
   return (

@@ -1,4 +1,4 @@
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react'
+import { BadgeCheck, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -16,10 +16,12 @@ import {
   useSidebar
 } from '@/components/ui/sidebar'
 import useAuth from '@/hooks/use-auth'
+import { open } from '@tauri-apps/plugin-shell'
+import { appUrl } from '@/lib/constants'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { user, logout } = useAuth()
+  const { user, isPremium, logout } = useAuth()
 
   return (
     <SidebarMenu>
@@ -69,27 +71,29 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            {!isPremium && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => open(appUrl + '/account/billing')}>
+                    <Sparkles />
+                    Upgrade to Premium
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => open(appUrl + '/account')}>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
+              {isPremium && (
+                <DropdownMenuItem onClick={() => open(appUrl + '/account/billing')}>
+                  <CreditCard />
+                  Billing
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
