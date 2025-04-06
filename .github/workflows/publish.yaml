@@ -24,6 +24,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     env:
       APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
       APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
       VITE_WEB_APP_URL: ${{ secrets.VITE_WEB_APP_URL }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
