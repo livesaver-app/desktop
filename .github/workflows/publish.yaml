@@ -67,13 +67,11 @@ jobs:
           CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID")
           if [ -z "$CERT_INFO" ]; then
             echo "❌ No Developer ID certificate found in keychain."
-            security find-identity -v -p codesigning build.keychain  # Debugging help
-            security find-identity -v -p codesigning  # Debugging help
             exit 1
           fi
-          CERT_ID=$(echo "$CERT_INFO" | awk '{print $2}')
+          CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
-          echo "✅ Certificate imported and CERT_ID set: $CERT_ID"
+          echo "✅ Certificate imported"
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
