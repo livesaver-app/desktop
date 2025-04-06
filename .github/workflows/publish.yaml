@@ -71,7 +71,7 @@ jobs:
             security find-identity -v -p codesigning  # Debugging help
             exit 1
           fi
-          CERT_ID=$(echo "$CERT_INFO" | awk '{print $1}')
+          CERT_ID=$(echo "$CERT_INFO" | awk '{print $2}')
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
           echo "✅ Certificate imported and CERT_ID set: $CERT_ID"
       - uses: tauri-apps/tauri-action@v0
