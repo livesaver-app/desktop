@@ -3,6 +3,7 @@ import { Control, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button.tsx'
 import { open } from '@tauri-apps/plugin-dialog'
+import { open as openUrl } from '@tauri-apps/plugin-shell'
 import { invoke } from '@tauri-apps/api/core'
 import {
   Form,
@@ -18,9 +19,12 @@ import { useEffect, useState } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { Progress } from '@/components/ui/progress.tsx'
 import { Checkbox } from './ui/checkbox'
+import useAuth from '@/hooks/use-auth.tsx'
+import { appUrl } from '@/lib/constants.ts'
 
 export const CopifyForm = () => {
   const [progress, setProgress] = useState(0)
+  const { isPremium } = useAuth()
 
   useEffect(() => {
     const unlisten = listen('copify-progress', (event) => {
@@ -48,15 +52,24 @@ export const CopifyForm = () => {
 
   const chooseFolder = async () => {
     try {
-      const path = await open({
-        directory: true,
+      const directory = await open({
+        directory: isPremium,
+        filters: [{ name: 'Ableton Live Project File', extensions: ['als'] }],
         multiple: false
       })
-      if (!path) return
-      setValue('folder', path)
+      if (!directory) return
+      if (!isPremium) {
+        setValue('folder', getFolderPath(directory))
+      } else {
+        setValue('folder', directory)
+      }
     } catch (e: any) {
       console.error(e)
     }
+  }
+
+  function getFolderPath(fullPath: string): string {
+    return fullPath.substring(0, fullPath.lastIndexOf('/'))
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -92,26 +105,35 @@ export const CopifyForm = () => {
               </FormItem>
             )}
           />
-          <div className="flex flex-col">
-            <Checker
-              control={form.control}
-              name="serum_noises"
-              title="Include Serum noises"
-              desc="Default, we don't modify Serum noises as it can interfere with other projects. But you can include them if you want to."
-            />
-            <Checker
-              control={form.control}
-              name="move_samples"
-              title="Move samples"
-              desc="Move the samples? (Deafult is copy, move can interfere with other projects)"
-            />
-            <Checker
-              control={form.control}
-              name="create_backup"
-              title="Backup"
-              desc="Create a backup of the .als files?"
-            />
-          </div>
+          {isPremium ? (
+            <div className="flex flex-col">
+              <Checker
+                control={form.control}
+                name="serum_noises"
+                title="Include Serum noises"
+                desc="Default, we don't modify Serum noises as it can interfere with other projects. But you can include them if you want to."
+              />
+              <Checker
+                control={form.control}
+                name="move_samples"
+                title="Move samples"
+                desc="Move the samples? (Deafult is copy, move can interfere with other projects)"
+              />
+              <Checker
+                control={form.control}
+                name="create_backup"
+                title="Backup"
+                desc="Create a backup of the .als files?"
+              />
+            </div>
+          ) : (
+            <div className={'py-6 text-sm italic'}>
+              <Button onClick={async () => await openUrl(`${appUrl}/account`)} variant={'link'}>
+                Upgrade
+              </Button>{' '}
+              to get more export options.
+            </div>
+          )}
           <Button type="submit">Start</Button>
         </form>
       </Form>
