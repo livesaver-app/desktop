@@ -1,12 +1,10 @@
 use crate::copify::models::CopifySettings;
 use crate::copify::update_sample_refs;
-use crate::utils::{compress, decompress, find_by_extension};
+use crate::utils::*;
 use std::fs;
 use std::io;
 use std::path::Path;
 use tauri::Emitter;
-
-use super::constants::*;
 
 #[tauri::command]
 pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), String> {
@@ -38,7 +36,7 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
 }
 
 fn create_backup(input: &Path) -> Result<(), io::Error> {
-    if (!input.ends_with(ALS_EXTENSION) || input.to_string_lossy().contains(ALS_BACKUP_EXTENSION)) {
+    if !input.ends_with(ALS_EXTENSION) || input.to_string_lossy().contains(ALS_BACKUP_EXTENSION) {
         println!("Input file is not valid to backup")
     }
 
