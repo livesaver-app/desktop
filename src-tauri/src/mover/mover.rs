@@ -18,7 +18,12 @@ pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(),
         folder: settings.target.clone(),
     };
 
-    let paths = copy_files_to_folder(files.clone(), settings.target.as_str());
+    let paths = copy_files_to_folder(
+        files.clone(),
+        settings.target.as_str(),
+        settings.move_project_files,
+    );
+
     for (i, file_path) in paths.iter().enumerate() {
         run_copify(file_path, &copify_settings).ok();
         window

@@ -103,7 +103,11 @@ pub fn find_relative_path(base_folder: &str, absolute_path: &str) -> String {
     }
 }
 
-pub fn copy_files_to_folder(file_paths: Vec<PathBuf>, parent_folder: &str) -> Vec<PathBuf> {
+pub fn copy_files_to_folder(
+    file_paths: Vec<PathBuf>,
+    parent_folder: &str,
+    move_files: bool,
+) -> Vec<PathBuf> {
     let mut new_paths = Vec::new();
     let parent_path = Path::new(parent_folder);
 
@@ -114,7 +118,11 @@ pub fn copy_files_to_folder(file_paths: Vec<PathBuf>, parent_folder: &str) -> Ve
 
             if let Some(file_name) = file_path.file_name() {
                 let destination = subfolder_path.join(file_name);
-                fs::copy(&file_path, &destination); // borrow the path
+                if move_files {
+                    fs::rename(&file_path, &destination);
+                } else {
+                    fs::copy(&file_path, &destination); // borrow the path
+                }
                 new_paths.push(destination);
             }
         }

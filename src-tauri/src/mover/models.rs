@@ -3,6 +3,8 @@ use std::fmt::Debug;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MoverSettings {
+    // Move project files
+    pub move_project_files: bool,
     // Include Serum noises
     pub serum_noises: bool,
     // Move or copy samples
