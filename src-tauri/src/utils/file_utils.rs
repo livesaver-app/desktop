@@ -3,8 +3,8 @@ use flate2::write::{GzDecoder, GzEncoder};
 use flate2::Compression;
 use pathdiff::diff_paths;
 use std::fs;
-use std::fs::{rename, File};
-use std::io::{self, BufReader, BufWriter, Read, Write};
+use std::fs::File;
+use std::io::{self, BufReader, BufWriter, Read};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -101,4 +101,23 @@ pub fn find_relative_path(base_folder: &str, absolute_path: &str) -> String {
             absolute_path.to_string_lossy().to_string()
         }
     }
+}
+
+pub fn copy_files_to_folder(file_paths: Vec<PathBuf>, parent_folder: &str) -> Vec<PathBuf> {
+    let mut new_paths = Vec::new();
+    let parent_path = Path::new(parent_folder);
+
+    for file_path in file_paths {
+        if let Some(file_stem) = file_path.file_stem() {
+            let subfolder_path = parent_path.join(file_stem);
+            fs::create_dir_all(&subfolder_path);
+
+            if let Some(file_name) = file_path.file_name() {
+                let destination = subfolder_path.join(file_name);
+                fs::copy(&file_path, &destination); // borrow the path
+                new_paths.push(destination);
+            }
+        }
+    }
+    new_paths
 }
