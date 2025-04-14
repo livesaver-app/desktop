@@ -24,6 +24,17 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn get_als_files(window: tauri::Window, folder: String) -> Result<Vec<PathBuf>, String> {
+    let files = find_by_extension(folder.as_str(), ALS);
+
+    if files.is_empty() {
+        return Err("No Ableton Live project files found".to_string());
+    }
+
+    Ok(files)
+}
+
 // TODO : Handle errors
 pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), io::Error> {
     let mut xml = file_path.clone();

@@ -15,8 +15,8 @@ interface IAuth {
 const AuthContext = createContext<IAuth>({
   user: null,
   profile: null,
-  signIn: async () => {},
-  logout: async () => {},
+  signIn: async () => { },
+  logout: async () => { },
   loading: false,
   isPremium: false
 })
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     () => ({
       user,
       profile,
-      isPremium,
+      isPremium: true,
       signIn,
       logout,
       loading

@@ -21,10 +21,24 @@ import { Progress } from '@/components/ui/progress.tsx'
 import { Checkbox } from './ui/checkbox'
 import useAuth from '@/hooks/use-auth.tsx'
 import { appUrl } from '@/lib/constants.ts'
+import { Switch } from './ui/switch'
+import {
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger
+} from '@/components/ui/multi-select'
+import { Loader2 } from 'lucide-react'
 
 export const CopifyForm = () => {
   const [progress, setProgress] = useState(0)
+  const [isCopifying, setIsCopifying] = useState<boolean>()
+  const [isProjectsLoading, setIsProjectsLoading] = useState<boolean>()
+  const [files, setFiles] = useState<string[]>()
   const { isPremium } = useAuth()
+  const [error, setError] = useState<Error | undefined>(undefined)
 
   useEffect(() => {
     const unlisten = listen('copify-progress', (event) => {
@@ -40,9 +54,10 @@ export const CopifyForm = () => {
     folder: z.string().min(1, {
       message: 'You need to choose a folder.'
     }),
-    serum_noises: z.boolean().default(false),
+    serum_noises: z.boolean().default(true),
     move_samples: z.boolean().default(false), // Default to false, cause we only want to copy if not specified to actually move the files
-    create_backup: z.boolean().default(false)
+    create_backup: z.boolean().default(true),
+    exclude_files: z.array(z.string()).optional()
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
@@ -51,6 +66,7 @@ export const CopifyForm = () => {
   const { setValue } = form
 
   const chooseFolder = async () => {
+    setError(undefined)
     try {
       const directory = await open({
         directory: isPremium,
@@ -63,9 +79,30 @@ export const CopifyForm = () => {
       } else {
         setValue('folder', directory)
       }
+      await getProjectFiles(directory)
     } catch (e: any) {
+      setError(e)
       console.error(e)
     }
+  }
+
+  async function getProjectFiles(directory: string) {
+    setIsProjectsLoading(true)
+    try {
+      setFiles([])
+      const alsFiles = ((await invoke('get_als_files', { folder: directory })) as string[]) ?? []
+      setFiles(alsFiles)
+    } catch (e: any) {
+      setError(e)
+      console.log(e)
+    } finally {
+      setIsProjectsLoading(false)
+    }
+  }
+
+  function getFileNameFromPath(path: string): string {
+    const parts = path.split(/[/\\]/) // handles both "/" and "\" (Windows)
+    return parts[parts.length - 1]
   }
 
   function getFolderPath(fullPath: string): string {
@@ -73,68 +110,126 @@ export const CopifyForm = () => {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log({ settings: values })
-    await invoke('copify', { settings: values })
+    setIsCopifying(true)
+    setError(undefined)
+    try {
+      await invoke('copify', { settings: values })
+    } catch (e: any) {
+      setError(e)
+      console.error(e)
+    } finally {
+      setIsCopifying(false)
+    }
   }
 
   return (
-    <div className={'px-4'}>
-      <p className="text-sm text-muted-foreground py-4">
-        Copify will copy/move samples from a project into its own folder so its easy to migrate
-        projects from machine to machine.
+    <div className={'px-4 py-6  max-w-3xl mx-auto '}>
+      <h1 className="py-2 scroll-m-20 text-2xl font-extrabold tracking-tight lg:text-3xl">
+        Choose a folder to get started
+      </h1>
+      {!isPremium && (
+        <div className={'text-sm italic pb-2 text-red-600'}>
+          You are not subscribed! Go ahead and
+          <Button onClick={async () => await openUrl(`${appUrl}/account`)} variant={'link'}>
+            Upgrade
+          </Button>{' '}
+          to enabled the export options.
+        </div>
+      )}
+      <p className="text-sm text-muted-foreground">
+        {isPremium ? (
+          <>
+            Copy project samples to project folder. Choose a folder to export multiple project at
+            once. It is recommended to enable backups before starting a copify export.
+          </>
+        ) : (
+          <>Copy project samples to project folder. Choose a project to get started.</>
+        )}
       </p>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           <FormField
             control={form.control}
             name="folder"
             render={({ field }) => (
               <FormItem className="py-4">
-                <FormLabel>Folder to scan</FormLabel>
+                <FormLabel>{isPremium ? <>Select folder</> : <>Select project</>}</FormLabel>
                 <FormControl>
-                  <Input
-                    onClick={chooseFolder}
-                    type="text"
-                    readOnly
-                    placeholder="No folder selected"
-                    {...field}
-                  />
+                  <Input onClick={chooseFolder} type="text" readOnly placeholder="..." {...field} />
                 </FormControl>
-                <FormDescription>The folder you want to scan for project files.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          {isPremium ? (
-            <div className="flex flex-col">
-              <Checker
-                control={form.control}
-                name="serum_noises"
-                title="Include Serum noises"
-                desc="Default, we don't modify Serum noises as it can interfere with other projects. But you can include them if you want to."
-              />
-              <Checker
-                control={form.control}
-                name="move_samples"
-                title="Move samples"
-                desc="Move the samples? (Deafult is copy, move can interfere with other projects)"
-              />
-              <Checker
-                control={form.control}
-                name="create_backup"
-                title="Backup"
-                desc="Create a backup of the .als files?"
-              />
-            </div>
-          ) : (
-            <div className={'py-6 text-sm italic'}>
-              <Button onClick={async () => await openUrl(`${appUrl}/account`)} variant={'link'}>
-                Upgrade
-              </Button>{' '}
-              to get more export options.
-            </div>
-          )}
-          <Button type="submit">Start</Button>
+          <FormField
+            control={form.control}
+            name="exclude_files"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Select projects to exclude</FormLabel>
+                <FormControl>
+                  <MultiSelector values={field.value ?? []} onValuesChange={field.onChange} loop>
+                    <MultiSelectorTrigger>
+                      {isProjectsLoading ? (
+                        <span className="text-xs italic flex animate-pulse text-muted-foreground">
+                          <Loader2 className="animate-spin mx-2 h-4 w-6" />
+                          Scanning for .als files
+                        </span>
+                      ) : (
+                        <MultiSelectorInput
+                          className="text-xs"
+                          placeholder={`${isPremium ? 'Search projects...' : 'No projects to exclude'}`}
+                        />
+                      )}
+                    </MultiSelectorTrigger>
+                    {isPremium && (
+                      <MultiSelectorContent>
+                        <MultiSelectorList>
+                          {files?.map((path) => (
+                            <MultiSelectorItem value={getFileNameFromPath(path)}>
+                              {getFileNameFromPath(path)}
+                            </MultiSelectorItem>
+                          ))}
+                        </MultiSelectorList>
+                      </MultiSelectorContent>
+                    )}
+                  </MultiSelector>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <h2 className="pt-6 pb-2">Export settings</h2>
+          <Checker
+            disabled={!isPremium}
+            isChecker={false}
+            control={form.control}
+            name="serum_noises"
+            title="Copy Serum noises"
+            desc="Copy Serum noises to the Samples folder"
+          />
+          <Checker
+            disabled={!isPremium}
+            isChecker={false}
+            control={form.control}
+            name="move_samples"
+            title="Move sample files"
+            desc="Move samples permanently (NOT RECOMMENDED)"
+          />
+          <Checker
+            disabled={!isPremium}
+            isChecker={false}
+            control={form.control}
+            name="create_backup"
+            title="Backup"
+            desc="Create a backup of my .als files"
+          />
+          {!!error && <div>{error.message}</div>}
+          <div className="space-x-4 py-2">
+            <Button type="submit" className="px-8">
+              Start
+            </Button>
+          </div>
         </form>
       </Form>
       {progress > 0 && <Progress value={progress} className="w-full my-4" />}
@@ -143,11 +238,15 @@ export const CopifyForm = () => {
 }
 
 const Checker = ({
+  isChecker,
   control,
   name,
   title,
-  desc
+  desc,
+  disabled
 }: {
+  disabled: boolean
+  isChecker: boolean
   control: Control<any>
   name: string
   title: string
@@ -158,15 +257,36 @@ const Checker = ({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="py-2">
-          <div className="flex items-center space-x-2">
-            <FormLabel>{title}</FormLabel>
+        <FormItem
+          className={`${isChecker
+              ? 'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'
+              : 'flex flex-row items-center justify-between rounded-lg border p-4'
+            }`}
+        >
+          {isChecker && (
             <FormControl>
-              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              <Checkbox
+                checked={field.value}
+                disabled={disabled}
+                onCheckedChange={field.onChange}
+              />
             </FormControl>
+          )}
+          <div className={`${isChecker ? 'space-y-1 leading-none' : 'space-y-0.5'}`}>
+            <FormLabel>{title}</FormLabel>
+            <FormDescription>{desc}</FormDescription>
+            <FormMessage />
           </div>
-          <FormDescription>{desc}</FormDescription>
-          <FormMessage />
+          {!isChecker && (
+            <FormControl>
+              <Switch
+                checked={field.value}
+                disabled={disabled}
+                onCheckedChange={field.onChange}
+                aria-readonly
+              />
+            </FormControl>
+          )}
         </FormItem>
       )}
     />
