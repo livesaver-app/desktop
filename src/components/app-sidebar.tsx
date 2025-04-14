@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Command, Frame, LifeBuoy, Map, PieChart, Send } from 'lucide-react'
+import { Command, ClipboardCopy, LifeBuoy, Map, ArrowRightLeft, Send } from 'lucide-react'
 import { NavProjects } from '@/components/nav-projects'
 import {
   Sidebar,
@@ -36,13 +36,13 @@ const data = {
     {
       name: 'Copify',
       url: '/copify',
-      icon: Frame,
+      icon: ClipboardCopy,
       disabled: false
     },
     {
       name: 'Mover',
       url: '/mover',
-      icon: PieChart,
+      icon: ArrowRightLeft,
       disabled: true
     },
     {

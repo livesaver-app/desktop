@@ -22,6 +22,7 @@ import { Checkbox } from './ui/checkbox'
 import useAuth from '@/hooks/use-auth.tsx'
 import { appUrl } from '@/lib/constants.ts'
 import { Switch } from './ui/switch'
+import { AlertCircle } from 'lucide-react'
 import {
   MultiSelector,
   MultiSelectorContent,
@@ -31,6 +32,7 @@ import {
   MultiSelectorTrigger
 } from '@/components/ui/multi-select'
 import { Loader2 } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export const CopifyForm = () => {
   const [progress, setProgress] = useState(0)
@@ -38,7 +40,8 @@ export const CopifyForm = () => {
   const [isProjectsLoading, setIsProjectsLoading] = useState<boolean>()
   const [files, setFiles] = useState<string[]>()
   const { isPremium } = useAuth()
-  const [error, setError] = useState<Error | undefined>(undefined)
+  const [error, setError] = useState<string | undefined>(undefined)
+  const isRunning = progress !== 100
 
   useEffect(() => {
     const unlisten = listen('copify-progress', (event) => {
@@ -57,7 +60,7 @@ export const CopifyForm = () => {
     serum_noises: z.boolean().default(true),
     move_samples: z.boolean().default(false), // Default to false, cause we only want to copy if not specified to actually move the files
     create_backup: z.boolean().default(true),
-    exclude_files: z.array(z.string()).optional()
+    exclude_files: z.array(z.string()).optional().default([])
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
@@ -117,8 +120,6 @@ export const CopifyForm = () => {
     } catch (e: any) {
       setError(e)
       console.error(e)
-    } finally {
-      setIsCopifying(false)
     }
   }
 
@@ -146,94 +147,129 @@ export const CopifyForm = () => {
           <>Copy project samples to project folder. Choose a project to get started.</>
         )}
       </p>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-          <FormField
-            control={form.control}
-            name="folder"
-            render={({ field }) => (
-              <FormItem className="py-4">
-                <FormLabel>{isPremium ? <>Select folder</> : <>Select project</>}</FormLabel>
-                <FormControl>
-                  <Input onClick={chooseFolder} type="text" readOnly placeholder="..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="exclude_files"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select projects to exclude</FormLabel>
-                <FormControl>
-                  <MultiSelector values={field.value ?? []} onValuesChange={field.onChange} loop>
-                    <MultiSelectorTrigger>
-                      {isProjectsLoading ? (
-                        <span className="text-xs italic flex animate-pulse text-muted-foreground">
-                          <Loader2 className="animate-spin mx-2 h-4 w-6" />
-                          Scanning for .als files
-                        </span>
-                      ) : (
-                        <MultiSelectorInput
-                          className="text-xs"
-                          placeholder={`${isPremium ? 'Search projects...' : 'No projects to exclude'}`}
-                        />
-                      )}
-                    </MultiSelectorTrigger>
-                    {isPremium && (
-                      <MultiSelectorContent>
-                        <MultiSelectorList>
-                          {files?.map((path) => (
-                            <MultiSelectorItem value={getFileNameFromPath(path)}>
-                              {getFileNameFromPath(path)}
-                            </MultiSelectorItem>
-                          ))}
-                        </MultiSelectorList>
-                      </MultiSelectorContent>
-                    )}
-                  </MultiSelector>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <h2 className="pt-6 pb-2">Export settings</h2>
-          <Checker
-            disabled={!isPremium}
-            isChecker={false}
-            control={form.control}
-            name="serum_noises"
-            title="Copy Serum noises"
-            desc="Copy Serum noises to the Samples folder"
-          />
-          <Checker
-            disabled={!isPremium}
-            isChecker={false}
-            control={form.control}
-            name="move_samples"
-            title="Move sample files"
-            desc="Move samples permanently (NOT RECOMMENDED)"
-          />
-          <Checker
-            disabled={!isPremium}
-            isChecker={false}
-            control={form.control}
-            name="create_backup"
-            title="Backup"
-            desc="Create a backup of my .als files"
-          />
-          {!!error && <div>{error.message}</div>}
-          <div className="space-x-4 py-2">
-            <Button type="submit" className="px-8">
-              Start
+      {isCopifying ? (
+        <>
+          <p className={`pt-8 text-muted-foreground ${isRunning && 'animate-spin'}`}>
+            {isRunning ? 'Copify in progress' : 'Copify finished'}
+          </p>
+          {progress > 0 && <Progress value={progress} className="w-full my-4" />}
+          <div className="flex space-x-8">
+            <Button className="my-4" onClick={() => setIsCopifying(false)}>
+              Export another one!
             </Button>
           </div>
-        </form>
-      </Form>
-      {progress > 0 && <Progress value={progress} className="w-full my-4" />}
+        </>
+      ) : (
+        <>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="folder"
+                render={({ field }) => (
+                  <FormItem className="py-4">
+                    <FormLabel>{isPremium ? <>Select folder</> : <>Select project</>}</FormLabel>
+                    <FormControl>
+                      <Input
+                        onClick={chooseFolder}
+                        type="text"
+                        readOnly
+                        placeholder="..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="exclude_files"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select projects to exclude</FormLabel>
+                    <FormControl>
+                      <MultiSelector
+                        values={field.value ?? []}
+                        onValuesChange={field.onChange}
+                        loop
+                      >
+                        <MultiSelectorTrigger>
+                          {isProjectsLoading ? (
+                            <span className="text-xs italic flex animate-pulse text-muted-foreground">
+                              <Loader2 className="animate-spin mx-2 h-4 w-6" />
+                              Scanning for .als files
+                            </span>
+                          ) : (
+                            <MultiSelectorInput
+                              className="text-xs"
+                              placeholder={`${isPremium ? 'Search projects...' : 'No projects to exclude'}`}
+                            />
+                          )}
+                        </MultiSelectorTrigger>
+                        {isPremium && (
+                          <MultiSelectorContent>
+                            <MultiSelectorList>
+                              {files?.map((path) => (
+                                <MultiSelectorItem value={getFileNameFromPath(path)}>
+                                  {getFileNameFromPath(path)}
+                                </MultiSelectorItem>
+                              ))}
+                            </MultiSelectorList>
+                          </MultiSelectorContent>
+                        )}
+                      </MultiSelector>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <h2 className="pt-6 pb-2">Export settings</h2>
+              <Checker
+                disabled={!isPremium}
+                isChecker={false}
+                control={form.control}
+                name="serum_noises"
+                title="Copy Serum noises"
+                desc="Copy Serum noises to the Samples folder"
+              />
+              <Checker
+                disabled={!isPremium}
+                isChecker={false}
+                control={form.control}
+                name="move_samples"
+                title="Move sample files"
+                desc="Move samples permanently (NOT RECOMMENDED)"
+              />
+              <Checker
+                disabled={!isPremium}
+                isChecker={false}
+                control={form.control}
+                name="create_backup"
+                title="Backup"
+                desc="Create a backup of my .als files"
+              />
+              <div className="space-x-4 py-2">
+                <Button disabled={isProjectsLoading} type="submit" className="px-8">
+                  Start
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </>
+      )}
+      {!!error && <ErrorAlert message={error} />}
     </div>
+  )
+}
+
+function ErrorAlert({ message }: { message: string }) {
+  return (
+    <Alert variant={'destructive'}>
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Error</AlertTitle>
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
   )
 }
 

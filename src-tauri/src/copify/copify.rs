@@ -16,6 +16,13 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
     }
 
     for (i, file_path) in files.iter().enumerate() {
+        if settings
+            .exclude_files
+            .iter()
+            .any(|k| file_path.to_string_lossy().contains(k))
+        {
+            continue;
+        }
         run_copify(file_path, &settings).ok();
         window
             .emit("copify-progress", ((i + 1) * 100) / files.len())
@@ -52,7 +59,7 @@ pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), 
 }
 
 fn create_backup(input: &Path) -> Result<(), io::Error> {
-    if !input.ends_with(ALS_EXTENSION) || input.to_string_lossy().contains(ALS_BACKUP_EXTENSION) {
+    if input.to_string_lossy().contains(ALS_BACKUP_EXTENSION) {
         println!("Input file is not valid to backup")
     }
 

@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "LiveSaver",
-        "width": 1280,
+        "width": 1180,
         "height": 1000,
         "resizable": true,
         "decorations": true,

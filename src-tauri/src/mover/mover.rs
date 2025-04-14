@@ -16,6 +16,7 @@ pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(),
         move_samples: settings.move_samples,
         create_backup: settings.create_backup,
         folder: settings.target.clone(),
+        exclude_files: settings.exlude_files,
     };
 
     let paths = copy_files_to_folder(
