@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     () => ({
       user,
       profile,
-      isPremium: true,
+      isPremium,
       signIn,
       logout,
       loading
