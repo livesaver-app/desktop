@@ -25,9 +25,7 @@
       "capabilities": [
         {
           "identifier": "draggable-window",
-          "windows": [
-            "*"
-          ],
+          "windows": ["*"],
           "permissions": [
             "core:window:allow-start-dragging",
             "dialog:allow-open",
@@ -43,6 +41,7 @@
     }
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
     "icon": [
@@ -52,5 +51,10 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5QURGMzBCOTg3RTY4ClJXUm9mcGdMODYxWkFQckRPaDFPYmR0dS9lQ3JNOGtPNGtBRGw3Nm0wMlNKNzBXZGpCRGExVU9RCg=="
+    }
   }
 }
