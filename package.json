@@ -26,6 +26,7 @@
     "@supabase/supabase-js": "^2.49.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.0.1",
+    "@tauri-apps/plugin-process": "^2.2.1",
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-updater": "^2.7.0",
     "class-variance-authority": "^0.7.0",
