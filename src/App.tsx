@@ -1,9 +1,10 @@
 import { Dashboard } from '@/app/dashboard/page.tsx'
 import { ThemeProvider } from '@/components/theme-provider.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { Copify } from './app/copify'
-import Auth from './app/auth'
-import useAuth from './hooks/use-auth'
+import { Copify } from '@/app/copify/page'
+import Auth from '@/app/auth/page'
+import useAuth from '@/hooks/use-auth'
+import { Mover } from './app/mover/page'
 
 const router = createBrowserRouter([
   {
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
   {
     path: '/copify',
     element: <Copify />
+  },
+  {
+    path: '/mover',
+    element: <Mover />
   }
 ])
 

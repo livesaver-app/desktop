@@ -16,14 +16,13 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
     }
 
     for (i, file_path) in files.iter().enumerate() {
-        if settings
+        if !settings
             .exclude_files
             .iter()
             .any(|k| file_path.to_string_lossy().contains(k))
         {
-            continue;
+            run_copify(file_path, &settings).ok();
         }
-        run_copify(file_path, &settings).ok();
         window
             .emit("copify-progress", ((i + 1) * 100) / files.len())
             .unwrap();

@@ -43,7 +43,7 @@ const data = {
       name: 'Mover',
       url: '/mover',
       icon: ArrowRightLeft,
-      disabled: true
+      disabled: false
     },
     {
       name: 'Backup',
