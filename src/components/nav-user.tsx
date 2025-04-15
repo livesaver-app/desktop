@@ -37,7 +37,9 @@ export function NavUser() {
                   src={user?.user_metadata.avatar_url}
                   alt={user?.user_metadata.preferred_username}
                 />
-                <AvatarFallback className="rounded-lg">LS</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {user?.email?.charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
@@ -61,7 +63,7 @@ export function NavUser() {
                     src={user?.user_metadata.avatar_url}
                     alt={user?.user_metadata.preffered_username}
                   />
-                  <AvatarFallback className="rounded-lg">LS</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{user?.email?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">

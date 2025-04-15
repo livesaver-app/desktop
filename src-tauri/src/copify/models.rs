@@ -7,4 +7,5 @@ pub struct CopifySettings {
     pub move_samples: bool,
     pub create_backup: bool,
     pub folder: String,
+    pub exclude_files: Vec<String>,
 }
