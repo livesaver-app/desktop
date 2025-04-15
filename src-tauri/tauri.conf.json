@@ -25,7 +25,9 @@
       "capabilities": [
         {
           "identifier": "draggable-window",
-          "windows": ["*"],
+          "windows": [
+            "*"
+          ],
           "permissions": [
             "core:window:allow-start-dragging",
             "dialog:allow-open",
@@ -54,7 +56,10 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5QURGMzBCOTg3RTY4ClJXUm9mcGdMODYxWkFQckRPaDFPYmR0dS9lQ3JNOGtPNGtBRGw3Nm0wMlNKNzBXZGpCRGExVU9RCg=="
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5QURGMzBCOTg3RTY4ClJXUm9mcGdMODYxWkFQckRPaDFPYmR0dS9lQ3JNOGtPNGtBRGw3Nm0wMlNKNzBXZGpCRGExVU9RCg==",
+      "endpoints": [
+        "https://livesaver.app/api/update/latest"
+      ]
     }
   }
 }
