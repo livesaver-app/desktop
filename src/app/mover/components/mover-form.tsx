@@ -54,11 +54,10 @@ export const MoverFormPage = () => {
 
 const MoverPage = ({ children }: { children: React.ReactNode }) => {
   const description =
-    'Copy project samples to project folder and move project files to a target folder. Great for mass exporting project before moving to a new machine/hard drive. It is recommended to enable backups before starting a copify export.'
+    "'Mover' copies project samples and moves project files to a target folder. Great for mass exporting project before moving to a new machine/hard drive. It is recommended to enable backups before starting a copify export."
 
   return (
     <div className={'px-4 py-6  max-w-3xl mx-auto '}>
-      <h1 className="py-2 scroll-m-20 text-2xl font-bold tracking-tight lg:text-3xl">Mover</h1>
       <p className="text-sm text-muted-foreground">{description}</p>
       {children}
     </div>

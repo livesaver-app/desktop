@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Command, ClipboardCopy, LifeBuoy, Map, ArrowRightLeft, Send } from 'lucide-react'
+import { Command, ClipboardCopy, House, Map, ArrowRightLeft, Send } from 'lucide-react'
 import { NavProjects } from '@/components/nav-projects'
 import {
   Sidebar,
@@ -18,7 +18,7 @@ const data = {
     {
       title: 'Support',
       url: 'https://github.com/livesaver-io/desktop/issues',
-      icon: LifeBuoy
+      icon: House
     },
     {
       title: 'Feedback',
@@ -27,12 +27,12 @@ const data = {
     }
   ],
   projects: [
-    {
-      name: 'Dashboard',
-      url: '/',
-      icon: LifeBuoy,
-      disabled: false
-    },
+    // {
+    //   name: 'Dashboard',
+    //   url: '/',
+    //   icon: House,
+    //   disabled: false
+    // },
     {
       name: 'Copify',
       url: '/copify',
@@ -77,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.projects} />
-        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+        {/*<NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
