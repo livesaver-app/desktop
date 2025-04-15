@@ -1,4 +1,3 @@
-import { Dashboard } from '@/app/dashboard/page.tsx'
 import { ThemeProvider } from '@/components/theme-provider.tsx'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { Copify } from '@/app/copify/page'
