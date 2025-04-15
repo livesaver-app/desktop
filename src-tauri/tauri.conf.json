@@ -36,7 +36,9 @@
             "core:event:default",
             "shell:default",
             "oauth:allow-start",
-            "oauth:allow-cancel"
+            "oauth:allow-cancel",
+            "updater:default",
+            "process:default"
           ]
         }
       ]

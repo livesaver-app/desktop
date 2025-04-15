@@ -9,15 +9,17 @@ interface IAuth {
   signIn: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   loading: boolean
+  initialLoading: boolean
   isPremium: boolean
 }
 
 const AuthContext = createContext<IAuth>({
   user: null,
   profile: null,
-  signIn: async () => { },
-  logout: async () => { },
+  signIn: async () => {},
+  logout: async () => {},
   loading: false,
+  initialLoading: false,
   isPremium: false
 })
 
@@ -33,7 +35,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isPremium, setIsPremium] = useState<boolean>(false)
 
   useEffect(() => {
-    setInitialLoading(true)
     const getUser = async () => {
       const {
         data: { session }
@@ -42,7 +43,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
 
     getUser()
-    setInitialLoading(false)
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user || null)
@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setProfile(data)
         setIsPremium(data.subscription_plan === 'premium')
       }
+      setInitialLoading(false)
     }
     if (user) getProfile()
   }, [user])
@@ -98,6 +99,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const memoedValue = useMemo(
     () => ({
+      initialLoading,
       user,
       profile,
       isPremium,
