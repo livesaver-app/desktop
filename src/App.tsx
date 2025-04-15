@@ -26,6 +26,7 @@ function App() {
   const { user } = useAuth()
   return (
     <ThemeProvider defaultTheme={'dark'} storageKey={'vite-ui-theme'}>
+      <div data-tauri-drag-region className="z-50 h-8  fixed w-full py-2 top-0"></div>
       {!user ? <Auth /> : <RouterProvider router={router} />}
     </ThemeProvider>
   )

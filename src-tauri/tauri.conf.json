@@ -17,7 +17,7 @@
         "height": 1000,
         "resizable": true,
         "decorations": true,
-        "titleBarStyle": "Transparent"
+        "titleBarStyle": "Overlay"
       }
     ],
     "security": {
