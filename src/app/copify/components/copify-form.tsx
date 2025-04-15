@@ -62,10 +62,10 @@ const CopifyPage = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className={'px-4 py-6  max-w-3xl mx-auto '}>
-      <h1 className="py-2 scroll-m-20 text-2xl font-bold tracking-tight lg:text-3xl">Copify</h1>
       <If condition={!isPremium}>
-        <SubscribeBanner />
+        <SubscribeBanner text={'You can only export 1 project at the time on the free plan.'} />
       </If>
+      <h1 className="py-2 scroll-m-20 text-2xl font-bold tracking-tight lg:text-3xl">Copify</h1>
       <p className="text-sm text-muted-foreground">{description}</p>
       {children}
     </div>

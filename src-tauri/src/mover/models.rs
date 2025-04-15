@@ -16,5 +16,5 @@ pub struct MoverSettings {
     // Target folder
     pub target: String,
     // Exclude project files
-    pub exlude_files: Vec<String>,
+    pub exclude_files: Vec<String>,
 }

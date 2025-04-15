@@ -1,15 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { open } from '@tauri-apps/plugin-shell'
 import { appUrl } from '@/lib/constants.ts'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
-export const SubscribeBanner = () => {
+export const SubscribeBanner = ({ text }: { text: string }) => {
   return (
-    <div className={'text-sm italic pb-2 text-red-600'}>
-      You are not subscribed! Go ahead and
-      <Button onClick={async () => await open(`${appUrl}/account`)} variant={'link'}>
-        Upgrade
-      </Button>{' '}
-      to enabled the export options.
-    </div>
+    <Alert variant={'destructive'} className="flex items-center justify-center mb-6">
+      <AlertDescription className="flex justify-between items-center">
+        {text}
+        <Button onClick={async () => await open(`${appUrl}/account`)} variant={'link'}>
+          Get started with Premium
+        </Button>
+      </AlertDescription>
+    </Alert>
   )
 }

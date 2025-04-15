@@ -8,9 +8,9 @@ const formSchema = z.object({
   folder: z.string().min(1, {
     message: 'You need to choose a folder.'
   }),
-  serum_noises: z.boolean().default(true),
+  serum_noises: z.boolean().default(false),
   move_samples: z.boolean().default(false), // Default to false, cause we only want to copy if not specified to actually move the files
-  create_backup: z.boolean().default(true),
+  create_backup: z.boolean().default(false),
   exclude_files: z.array(z.string()).optional().default([])
 })
 

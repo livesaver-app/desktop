@@ -11,9 +11,10 @@ const formSchema = z.object({
   target: z.string().min(1, {
     message: 'You need to choose a target folder.'
   }),
-  serum_noises: z.boolean().default(true),
+  serum_noises: z.boolean().default(false),
+  move_project_files: z.boolean().default(false),
   move_samples: z.boolean().default(false), // Default to false, cause we only want to copy if not specified to actually move the files
-  create_backup: z.boolean().default(true),
+  create_backup: z.boolean().default(false),
   exclude_files: z.array(z.string()).optional().default([])
 })
 
@@ -36,7 +37,7 @@ const MoverContext = createContext<MoverContextType | undefined>(undefined)
 export const useMover = () => {
   const context = useContext(MoverContext)
   if (!context) {
-    throw new Error('useMover must be used within a CopifyProvider')
+    throw new Error('useMover must be used within a MoverProvider')
   }
   return context
 }
@@ -64,7 +65,7 @@ export const MoverProvider = ({ children }: MoverProviderProps) => {
     setIsMoving(true)
     setError(undefined)
     try {
-      await invoke('copify', { settings: values })
+      await invoke('mover', { settings: values })
     } catch (e: any) {
       setError(e)
       console.error(e)

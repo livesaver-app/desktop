@@ -16,21 +16,26 @@ pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(),
         move_samples: settings.move_samples,
         create_backup: settings.create_backup,
         folder: settings.target.clone(),
-        exclude_files: settings.exlude_files,
+        exclude_files: settings.exclude_files.clone(),
     };
 
-    let paths = copy_files_to_folder(
+    let paths = move_or_copy_files(
         files.clone(),
         settings.target.as_str(),
         settings.move_project_files,
     );
 
     for (i, file_path) in paths.iter().enumerate() {
-        run_copify(file_path, &copify_settings).ok();
+        if !settings
+            .exclude_files
+            .iter()
+            .any(|k| file_path.to_string_lossy().contains(k))
+        {
+            run_copify(file_path, &copify_settings).ok();
+        }
         window
-            .emit("mover-progress", ((i + 1) * 100) / files.len())
+            .emit("mover-progress", ((i + 1) * 100) / paths.len())
             .unwrap();
     }
-
     Ok(())
 }
