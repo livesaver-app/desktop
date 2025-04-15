@@ -1,5 +1,5 @@
-use crate::copify::{CopifySettings, SAMPLES_IMPORTED};
-use crate::utils::{copy_sample, decode_xml_value, get_last_segment};
+use crate::copify::CopifySettings;
+use crate::utils::{copy_sample, decode_xml_value, get_last_segment, SAMPLES_IMPORTED};
 use quick_xml::events::attributes::Attribute;
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::QName;

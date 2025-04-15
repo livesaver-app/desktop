@@ -3,8 +3,8 @@ use flate2::write::{GzDecoder, GzEncoder};
 use flate2::Compression;
 use pathdiff::diff_paths;
 use std::fs;
-use std::fs::{rename, File};
-use std::io::{self, BufReader, BufWriter, Read, Write};
+use std::fs::File;
+use std::io::{self, BufReader, BufWriter, Read};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -101,4 +101,58 @@ pub fn find_relative_path(base_folder: &str, absolute_path: &str) -> String {
             absolute_path.to_string_lossy().to_string()
         }
     }
+}
+pub fn move_or_copy_files(
+    files: Vec<PathBuf>,
+    target_folder: &str,
+    move_files: bool,
+) -> Vec<PathBuf> {
+    let mut new_paths = Vec::new();
+    let target_base = Path::new(target_folder);
+
+    for file_path in &files {
+        let source_folder = match file_path.parent() {
+            Some(folder) => folder,
+            None => continue,
+        };
+
+        let folder_name = match source_folder.file_name() {
+            Some(name) => name,
+            None => continue,
+        };
+
+        let target_subfolder = target_base.join(folder_name);
+
+        if move_files {
+            fs::rename(source_folder, &target_subfolder); // moves entire folder
+        } else {
+            copy_dir_all(source_folder, &target_subfolder); // custom recursive copy
+        }
+
+        let new_file_path = target_subfolder.join(file_path.file_name().unwrap_or_default());
+
+        new_paths.push(new_file_path);
+    }
+
+    new_paths
+}
+
+fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
+    if !dst.exists() {
+        fs::create_dir_all(dst)?;
+    }
+
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let entry_path = entry.path();
+        let dest_path = dst.join(entry.file_name());
+
+        if entry_path.is_dir() {
+            copy_dir_all(&entry_path, &dest_path)?;
+        } else {
+            fs::copy(&entry_path, &dest_path)?;
+        }
+    }
+
+    Ok(())
 }

@@ -12,12 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "LiveSaver",
-        "width": 1000,
-        "height": 800,
+        "title": "",
+        "width": 1180,
+        "height": 1000,
         "resizable": true,
         "decorations": true,
-        "titleBarStyle": "Transparent"
+        "titleBarStyle": "Overlay"
       }
     ],
     "security": {
