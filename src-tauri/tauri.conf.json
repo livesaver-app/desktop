@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "LiveSaver",
+        "title": "",
         "width": 1180,
         "height": 1000,
         "resizable": true,
