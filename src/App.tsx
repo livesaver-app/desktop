@@ -29,9 +29,7 @@ function App() {
   const { user, initialLoading } = useAuth()
 
   useMountedEffect(() => {
-    if (import.meta.env.PROD) {
-      checkForUpdates()
-    }
+    checkForUpdates(false)
   }, [])
 
   return (
