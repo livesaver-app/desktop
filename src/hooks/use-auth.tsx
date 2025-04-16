@@ -16,8 +16,8 @@ interface IAuth {
 const AuthContext = createContext<IAuth>({
   user: null,
   profile: null,
-  signIn: async () => {},
-  logout: async () => {},
+  signIn: async () => { },
+  logout: async () => { },
   loading: false,
   initialLoading: false,
   isPremium: false
@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         data: { session }
       } = await supabase.auth.getSession()
       if (session) setUser(session.user)
+      setInitialLoading(false)
     }
 
     getUser()
@@ -65,7 +66,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setProfile(data)
         setIsPremium(data.subscription_plan === 'premium')
       }
-      setInitialLoading(false)
     }
     if (user) getProfile()
   }, [user])
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       logout,
       loading
     }),
-    [user, profile, isPremium, loading]
+    [user, profile, isPremium, loading, initialLoading]
   )
 
   return (
