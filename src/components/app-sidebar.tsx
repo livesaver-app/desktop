@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Command, ClipboardCopy, House, Map, ArrowRightLeft, Send } from 'lucide-react'
+import { ClipboardCopy, House, Map, ArrowRightLeft, Send } from 'lucide-react'
 import { NavProjects } from '@/components/nav-projects'
 import {
   Sidebar,
