@@ -2,6 +2,7 @@ import { User } from '@supabase/supabase-js'
 import { supabase } from '@/supabaseClient'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { Profile } from '@/types/profile'
+import { useMountedEffect } from './use-mounted-effect'
 
 interface IAuth {
   user: User | null
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isPremium, setIsPremium] = useState<boolean>(false)
 
-  useEffect(() => {
+  useMountedEffect(() => {
     const getUser = async () => {
       const {
         data: { session }
@@ -54,8 +55,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [])
 
-  useEffect(() => {
+  useMountedEffect(() => {
     const getProfile = async () => {
+      setInitialLoading(true)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -66,6 +68,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setProfile(data)
         setIsPremium(data.subscription_plan === 'premium')
       }
+      setInitialLoading(false)
     }
     if (user) getProfile()
   }, [user])
@@ -110,9 +113,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     [user, profile, isPremium, loading, initialLoading]
   )
 
-  return (
-    <AuthContext.Provider value={memoedValue}>{!initialLoading && children}</AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>
 }
 
 export default function useAuth() {
