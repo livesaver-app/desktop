@@ -80,7 +80,10 @@ export function NavUser() {
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => open(appUrl + '/account/billing')}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => open(appUrl + '/account/billing')}
+                  >
                     <Sparkles />
                     Upgrade to Premium
                   </DropdownMenuItem>
@@ -89,23 +92,29 @@ export function NavUser() {
             )}
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => open(appUrl + '/account')}>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => open(appUrl + '/account')}
+              >
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
               {isPremium && (
-                <DropdownMenuItem onClick={() => open(appUrl + '/account/billing')}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => open(appUrl + '/account/billing')}
+                >
                   <CreditCard />
                   Billing
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => checkForUpdates(true)}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => checkForUpdates(true)}>
                 <Recycle />
                 Check for updates
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem className="cursor-pointer" onClick={logout}>
               <LogOut />
               Log out
             </DropdownMenuItem>
