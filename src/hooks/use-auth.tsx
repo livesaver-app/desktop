@@ -1,6 +1,6 @@
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/supabaseClient'
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { Profile } from '@/types/profile'
 import { useMountedEffect } from './use-mounted-effect'
 

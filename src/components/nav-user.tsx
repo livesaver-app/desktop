@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react'
+import { BadgeCheck, ChevronsUpDown, CreditCard, LogOut, Recycle, Sparkles } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import {
 import useAuth from '@/hooks/use-auth'
 import { open } from '@tauri-apps/plugin-shell'
 import { appUrl } from '@/lib/constants'
+import { checkForUpdates } from '@/lib/check-updates'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -63,7 +64,9 @@ export function NavUser() {
                     src={user?.user_metadata.avatar_url}
                     alt={user?.user_metadata.preffered_username}
                   />
-                  <AvatarFallback className="rounded-lg">{user?.email?.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
@@ -96,6 +99,10 @@ export function NavUser() {
                   Billing
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={() => checkForUpdates(true)}>
+                <Recycle />
+                Check for updates
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
