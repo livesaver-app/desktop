@@ -1,4 +1,4 @@
-mod copify;
+pub(crate) mod copify;
 mod models;
 mod xml;
 

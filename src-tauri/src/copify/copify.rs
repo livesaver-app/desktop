@@ -6,6 +6,7 @@ use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use tauri::Emitter;
+use crate::error::Error;
 
 #[tauri::command]
 pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), String> {
@@ -31,11 +32,11 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
 }
 
 #[tauri::command]
-pub async fn get_als_files(window: tauri::Window, folder: String) -> Result<Vec<PathBuf>, String> {
+pub async fn get_als_files(window: tauri::Window, folder: String) -> Result<Vec<PathBuf>, Error> {
     let files = find_by_extension(folder.as_str(), ALS);
 
     if files.is_empty() {
-        return Err("No Ableton Live project files found".to_string());
+        return Error::FileNotFound("No Ableton Live project files found".to_string())
     }
 
     Ok(files)
