@@ -1,5 +1,6 @@
 //! Main Crate Error
 
+use std::io;
 use serde::Serialize;
 
 #[derive(thiserror::Error, Debug, Serialize)]
@@ -15,10 +16,10 @@ pub enum Error {
 
     #[error("Mover error: {0}")]
     MoverFailed(String),
+}
 
-    #[error("Static error: {0}")]
-    Static(&'static str),
-
-    #[error(transparent)]
-    IO(#[from] std::io::Error),
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Error::Generic(e.to_string())
+    }
 }

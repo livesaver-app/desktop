@@ -1,19 +1,19 @@
 use crate::copify::models::CopifySettings;
 use crate::copify::update_sample_refs;
 use crate::utils::*;
+use crate::error::Error;
 use std::fs;
 use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use tauri::Emitter;
-use crate::error::Error;
 
 #[tauri::command]
-pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), String> {
+pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), Error> {
     let files = find_by_extension(settings.folder.as_str(), ALS);
 
     if files.is_empty() {
-        return Err("No Ableton Live project files found".to_string());
+        return Err(Error::FileNotFound("No Ableton Live project files found".to_string()));
     }
 
     for (i, file_path) in files.iter().enumerate() {
@@ -36,14 +36,13 @@ pub async fn get_als_files(window: tauri::Window, folder: String) -> Result<Vec<
     let files = find_by_extension(folder.as_str(), ALS);
 
     if files.is_empty() {
-        return Error::FileNotFound("No Ableton Live project files found".to_string())
+        return Err(Error::FileNotFound("No Ableton Live project files found".to_string()))
     }
 
     Ok(files)
 }
 
-// TODO : Handle errors
-pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), io::Error> {
+pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), Error> {
     let mut xml = file_path.clone();
     xml.set_extension(XML);
 
@@ -58,17 +57,17 @@ pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), 
     Ok(())
 }
 
-fn create_backup(input: &Path) -> Result<(), io::Error> {
+fn create_backup(input: &Path) -> Result<(), Error> {
     if input.to_string_lossy().contains(ALS_BACKUP_EXTENSION) {
-        println!("Input file is not valid to backup")
+        return Err(Error::CopifyFailed("Input file is not valid to backup".to_string()))
     }
 
     let dir = input
         .parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file path"))?;
+        .ok_or_else(|| Error::FileNotFound("Invalid file path".to_string()))?;
     let filename = input
         .file_name()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file path"))?;
+        .ok_or_else(|| Error::FileNotFound("Invalid file path".to_string()))?;
 
     let backup_filename = format!(
         "{}{}",
