@@ -12,8 +12,16 @@ use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Write;
 use std::path::Path;
+use crate::error::Error;
 
-pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<(), io::Error> {
+/// Finds sample files in an Ableton Live project file
+/// and does the following:
+///
+/// * Copies it to the project folder
+/// * Set <SampleRef /> XML tag in project file with new sample path
+/// * Overwrite previous XML
+///
+pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<(), Error> {
     let dir = xml_path.parent().unwrap();
     let temp_path = dir.join("temp_output.xml");
 
@@ -32,14 +40,14 @@ pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Decl(ref e)) => {
-                writer.write_event(Event::Decl(e.clone()));
+                writer.write_event(Event::Decl(e.clone()))?;
             }
             Ok(Event::Start(ref e)) => {
                 let tag = reader.decoder().decode(e.name().0).unwrap().to_string();
                 if tag == "SampleRef" {
                     inside_sample_ref = true;
                 }
-                writer.write_event(Event::Start(e.clone()));
+                writer.write_event(Event::Start(e.clone()))?;
             }
             Ok(Event::Empty(ref e)) => {
                 let tag = reader.decoder().decode(e.name().0).unwrap().to_string();
@@ -48,10 +56,10 @@ pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<
                     let mut path_element = e.clone();
                     if let Some(path_value) = get_value_attribute(&path_element, settings) {
                         let sanitized = decode_xml_value(&path_value);
-                        let absolute = copy_sample(&sanitized, dir).unwrap();
+                        let absolute = copy_sample(&sanitized, dir)?;
                         modify_value_attribute(&mut path_element, "Value", &absolute);
                     }
-                    writer.write_event(Event::Empty(path_element));
+                    writer.write_event(Event::Empty(path_element))?;
                 } else if tag == "RelativePath" && inside_sample_ref {
                     let mut path_element = e.clone();
                     if let Some(path_value) = get_value_attribute(&path_element, settings) {
@@ -62,9 +70,9 @@ pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<
                                 .as_str(),
                         );
                     }
-                    writer.write_event(Event::Empty(path_element));
+                    writer.write_event(Event::Empty(path_element))?;
                 } else {
-                    writer.write_event(Event::Empty(e.clone()));
+                    writer.write_event(Event::Empty(e.clone()))?;
                 }
             }
             Ok(Event::End(ref e)) => {
@@ -72,10 +80,10 @@ pub fn update_sample_refs(xml_path: &Path, settings: &CopifySettings) -> Result<
                 if tag == "SampleRef" {
                     inside_sample_ref = false;
                 }
-                writer.write_event(Event::End(e.clone()));
+                writer.write_event(Event::End(e.clone()))?;
             }
             Ok(Event::Text(ref e)) => {
-                writer.write_event(Event::Text(e.clone()));
+                writer.write_event(Event::Text(e.clone()))?;
             }
             Ok(Event::Eof) => break,
             Err(e) => {

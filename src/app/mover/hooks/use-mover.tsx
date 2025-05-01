@@ -1,8 +1,9 @@
-import { z } from 'zod'
-import { invoke } from '@tauri-apps/api/core'
-import { createContext, useContext, useMemo, useState } from 'react'
-import { useForm, UseFormReturn } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import {z} from 'zod'
+import {invoke} from '@tauri-apps/api/core'
+import {createContext, useContext, useMemo, useState} from 'react'
+import {useForm, UseFormReturn} from 'react-hook-form'
+import {zodResolver} from '@hookform/resolvers/zod'
+import {MoverProgress} from "@/app/mover/components/mover-form.tsx";
 
 const formSchema = z.object({
   folder: z.string().min(1, {
@@ -19,7 +20,7 @@ const formSchema = z.object({
 })
 
 type MoverContextType = {
-  progress: number
+  progress: MoverProgress | undefined
   isRunning: boolean
   isProjectsLoading: boolean
   isMoving: boolean
@@ -27,7 +28,7 @@ type MoverContextType = {
   error: string | undefined
   form: UseFormReturn<z.infer<typeof formSchema>>
   mover: (values: z.infer<typeof formSchema>) => Promise<void>
-  updateProgress: (p: number) => void
+  updateProgress: (p: MoverProgress) => void
   getProjectFiles: (directory: string) => Promise<void>
   restart: () => void
 }
@@ -46,8 +47,8 @@ interface MoverProviderProps {
   children: React.ReactNode
 }
 
-export const MoverProvider = ({ children }: MoverProviderProps) => {
-  const [progress, setProgress] = useState<number>(0)
+export const MoverProvider = ({children}: MoverProviderProps) => {
+  const [progress, setProgress] = useState<MoverProgress | undefined>()
   const [isMoving, setIsMoving] = useState<boolean>(false)
   const [isProjectsLoading, setIsProjectsLoading] = useState<boolean>(false)
   const [files, setFiles] = useState<string[]>([])
@@ -61,7 +62,7 @@ export const MoverProvider = ({ children }: MoverProviderProps) => {
   const { reset } = form
 
   const mover = async (values: z.infer<typeof formSchema>) => {
-    setProgress(0)
+    setProgress(undefined)
     setIsMoving(true)
     setError(undefined)
     try {
@@ -77,10 +78,10 @@ export const MoverProvider = ({ children }: MoverProviderProps) => {
     setFiles([])
     setIsMoving(false)
     setError(undefined)
-    setProgress(0)
+    setProgress(undefined)
   }
 
-  const updateProgress = (p: number) => {
+  const updateProgress = (p: MoverProgress) => {
     setProgress(p)
   }
 
@@ -88,7 +89,7 @@ export const MoverProvider = ({ children }: MoverProviderProps) => {
     setIsProjectsLoading(true)
     try {
       setFiles([])
-      const alsFiles = ((await invoke('get_als_files', { folder: directory })) as string[]) ?? []
+      const alsFiles = ((await invoke('get_als_files', {folder: directory})) as string[]) ?? []
       setFiles(alsFiles)
     } catch (e: any) {
       setError(e)

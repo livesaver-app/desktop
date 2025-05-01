@@ -3,10 +3,10 @@ use crate::copify::update_sample_refs;
 use crate::utils::*;
 use crate::error::Error;
 use std::fs;
-use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use tauri::Emitter;
+use log::error;
 
 #[tauri::command]
 pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), Error> {
@@ -22,7 +22,7 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
             .iter()
             .any(|k| file_path.to_string_lossy().contains(k))
         {
-            run_copify(file_path, &settings).ok();
+            run_copify(file_path, &settings)?;
         }
         window
             .emit("copify-progress", ((i + 1) * 100) / files.len())
@@ -36,13 +36,24 @@ pub async fn get_als_files(window: tauri::Window, folder: String) -> Result<Vec<
     let files = find_by_extension(folder.as_str(), ALS);
 
     if files.is_empty() {
-        return Err(Error::FileNotFound("No Ableton Live project files found".to_string()))
+        return Err(Error::FileNotFound("No Ableton Live project files found".to_string()));
     }
 
     Ok(files)
 }
 
+/// Find a project files samples and move its samples into its folder.
+///
+/// # Arguments
+///
+/// * `file_path` - Ableton project file
+/// * `settings` - Copify process settings
 pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), Error> {
+    // Skip project files that are in the Ableton Backup folder
+    if is_backup_folder(file_path) {
+        return Ok(());
+    }
+
     let mut xml = file_path.clone();
     xml.set_extension(XML);
 
@@ -50,16 +61,17 @@ pub fn run_copify(file_path: &PathBuf, settings: &CopifySettings) -> Result<(), 
         create_backup(file_path)?;
     }
 
-    decompress(file_path, xml.as_path()).ok();
-    update_sample_refs(xml.as_path(), settings).ok();
-    compress(xml.as_path(), file_path).ok();
-    fs::remove_file(xml).ok();
+    decompress(file_path, xml.as_path())?;
+    update_sample_refs(xml.as_path(), settings)?;
+    compress(xml.as_path(), file_path)?;
+    fs::remove_file(xml)?;
+
     Ok(())
 }
 
 fn create_backup(input: &Path) -> Result<(), Error> {
     if input.to_string_lossy().contains(ALS_BACKUP_EXTENSION) {
-        return Err(Error::CopifyFailed("Input file is not valid to backup".to_string()))
+        return Err(Error::CopifyFailed("Input file is not valid to backup".to_string()));
     }
 
     let dir = input

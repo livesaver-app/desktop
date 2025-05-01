@@ -4,20 +4,46 @@ use flate2::Compression;
 use pathdiff::diff_paths;
 use std::fs;
 use std::fs::File;
-use std::io::{self, BufReader, BufWriter, Read};
+use std::io::{self, BufReader, BufWriter, ErrorKind, Read};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 pub fn copy_sample(sample: &str, project_root: &Path) -> Result<String> {
-    let filename = Path::new(sample).file_name().unwrap();
+    let filename = Path::new(sample)
+        .file_name()
+        .ok_or(Error::CopifyFailed("Invalid sample path: no filename".to_string()))?;
+
     let destination = project_root.join("Samples").join("Imported");
 
-    fs::create_dir_all(&destination)?;
+    // Try to create the destination folder
+    fs::create_dir_all(&destination)
+        .map_err(|e| Error::CopifyFailed(format!("Failed to create destination folder: {}", e)))?;
 
     let dest_file = destination.join(filename);
-    fs::copy(sample, &dest_file)?;
 
-    Ok(dest_file.to_string_lossy().into_owned())
+    // If the file already exists, optionally overwrite or skip
+    match fs::copy(sample, &dest_file) {
+        Ok(_) => Ok(dest_file.to_string_lossy().into_owned()),
+        Err(e) => {
+            match e.kind() {
+                ErrorKind::PermissionDenied => Err(Error::CopifyFailed(format!(
+                    "Permission denied copying file from {} to {}",
+                    sample,
+                    dest_file.display()
+                ))),
+                ErrorKind::AlreadyExists => Err(Error::CopifyFailed(format!(
+                    "File already exists: {}",
+                    dest_file.display()
+                ))),
+                _ => Err(Error::CopifyFailed(format!(
+                    "Failed to copy {} to {}: {}",
+                    sample,
+                    dest_file.display(),
+                    e
+                ))),
+            }
+        }
+    }
 }
 
 pub fn compress(input: &Path, output: &Path) -> Result<()> {
@@ -52,6 +78,10 @@ pub fn decompress(input: &Path, output: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Find files by a specific file type
+///
+/// Default ignore Ableton project files that
+/// are in the "Backup" folder
 pub fn find_by_extension(folder: &str, ext: &str) -> Vec<PathBuf> {
     let mut files = Vec::new();
 
@@ -66,7 +96,10 @@ pub fn find_by_extension(folder: &str, ext: &str) -> Vec<PathBuf> {
         if entry_path.is_file() {
             if let Some(extension) = entry_path.extension() {
                 if extension == ext {
-                    files.push(entry_path.to_path_buf())
+                    let file_path = entry_path.to_path_buf();
+                    if !is_backup_folder(&file_path) {
+                        files.push(entry_path.to_path_buf())
+                    }
                 }
             }
         }
@@ -102,11 +135,12 @@ pub fn find_relative_path(base_folder: &str, absolute_path: &str) -> String {
         }
     }
 }
+
 pub fn move_or_copy_files(
     files: Vec<PathBuf>,
     target_folder: &str,
     move_files: bool,
-) -> Vec<PathBuf> {
+) -> Result<Vec<PathBuf>> {
     let mut new_paths = Vec::new();
     let target_base = Path::new(target_folder);
 
@@ -124,9 +158,9 @@ pub fn move_or_copy_files(
         let target_subfolder = target_base.join(folder_name);
 
         if move_files {
-            fs::rename(source_folder, &target_subfolder); // moves entire folder
+            fs::rename(source_folder, &target_subfolder)?; // moves entire folder
         } else {
-            copy_dir_all(source_folder, &target_subfolder); // custom recursive copy
+            copy_dir_all(source_folder, &target_subfolder)?; // custom recursive copy
         }
 
         let new_file_path = target_subfolder.join(file_path.file_name().unwrap_or_default());
@@ -134,7 +168,7 @@ pub fn move_or_copy_files(
         new_paths.push(new_file_path);
     }
 
-    new_paths
+    Ok(new_paths)
 }
 
 fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
@@ -155,4 +189,11 @@ fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
     }
 
     Ok(())
+}
+
+pub fn is_backup_folder(path: &PathBuf) -> bool {
+    path.parent()
+        .and_then(|parent| parent.file_name())
+        .map(|name| name == "Backup")
+        .unwrap_or(false)
 }
