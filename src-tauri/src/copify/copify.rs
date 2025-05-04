@@ -6,7 +6,6 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 use tauri::Emitter;
-use log::error;
 
 #[tauri::command]
 pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(), Error> {
@@ -16,17 +15,21 @@ pub async fn copify(window: tauri::Window, settings: CopifySettings) -> Result<(
         return Err(Error::FileNotFound("No Ableton Live project files found".to_string()));
     }
 
+    let progress_name = "copify-progress";
+
     for (i, file_path) in files.iter().enumerate() {
-        if !settings
-            .exclude_files
-            .iter()
-            .any(|k| file_path.to_string_lossy().contains(k))
-        {
-            run_copify(file_path, &settings)?;
-        }
-        window
-            .emit("copify-progress", ((i + 1) * 100) / files.len())
-            .unwrap();
+        let progress_value = ((i + 1) * 100) / files.len();
+        let file_name_str = file_path.to_string_lossy().to_string();
+
+        if should_run(file_path, settings.exclude_files.to_vec()) {
+            let progress = match run_copify(file_path, &settings) {
+                Ok(_) => on_success(file_name_str.clone(), progress_value),
+                Err(e) => on_error(file_name_str.clone(), progress_value, e.to_string())
+            };
+            window.emit(progress_name, progress).unwrap()
+        } else {
+            window.emit(progress_name, on_skip(file_name_str.clone(), progress_value)).unwrap()
+        };
     }
     Ok(())
 }
@@ -93,3 +96,4 @@ fn create_backup(input: &Path) -> Result<(), Error> {
 
     Ok(())
 }
+

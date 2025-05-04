@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-use super::models::{MoverProgress, MoverSettings};
+use super::models::{MoverSettings};
 use crate::copify::*;
 use crate::utils::*;
 use tauri::Emitter;
@@ -44,42 +43,4 @@ pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(),
         };
     }
     Ok(())
-}
-
-fn should_run(file_path: &PathBuf, exclude: Vec<String>) -> bool {
-    if !exclude
-        .iter()
-        .any(|k| file_path.to_string_lossy().contains(k)) {
-        true
-    } else {
-        false
-    }
-}
-
-fn on_success(file_name: String, progress: usize) -> MoverProgress {
-    make_progress(file_name, progress, false, false, "".to_string())
-}
-
-fn on_error(file_name: String, progress: usize, error_msg: String) -> MoverProgress {
-    make_progress(file_name, progress, true, false, error_msg)
-}
-
-fn on_skip(file_name: String, progress: usize) -> MoverProgress {
-    make_progress(file_name, progress, false, true, "Project was skipped.".to_string())
-}
-
-fn make_progress(
-    file_name: String,
-    progress: usize,
-    is_error: bool,
-    is_skipped: bool,
-    error_msg: String,
-) -> MoverProgress {
-    MoverProgress {
-        is_error,
-        is_skipped,
-        error_msg,
-        progress,
-        file_name,
-    }
 }

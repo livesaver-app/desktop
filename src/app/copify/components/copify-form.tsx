@@ -11,7 +11,6 @@ import {
 import { Input } from '@/components/ui/input.tsx'
 import { useEffect, useState } from 'react'
 import { listen } from '@tauri-apps/api/event'
-import { Progress } from '@/components/ui/progress.tsx'
 import useAuth from '@/hooks/use-auth.tsx'
 import {
   MultiSelector,
@@ -28,13 +27,15 @@ import { SubscribeBanner } from './subscribe-banner'
 import { If } from '@/utils/if'
 import { Checker } from '@/components/form-checker'
 import { ErrorAlert } from '@/components/error-alert'
+import { IProgress } from '@/hooks/use-progress.tsx'
+import { ProgressBar } from '@/components/progress-bar.tsx'
 
 export const CopifyFormPage = () => {
-  const { error, isCopifying, updateProgress } = useCopify()
+  const { isRunning, progress, log, restart, error, isProcessing, updateProgress } = useCopify()
 
   useEffect(() => {
     const unlisten = listen('copify-progress', (event) => {
-      updateProgress(event.payload as number)
+      updateProgress(event.payload as IProgress)
     })
 
     return () => {
@@ -44,8 +45,14 @@ export const CopifyFormPage = () => {
 
   return (
     <CopifyPage>
-      <If condition={isCopifying} fallback={<CopifyForm />}>
-        <CopifyProgress />
+      <If condition={isProcessing} fallback={<CopifyForm />}>
+        <ProgressBar
+          process={'Copify'}
+          isRunning={isRunning}
+          progress={progress}
+          log={log}
+          restart={restart}
+        />
       </If>
       <If condition={!!error}>
         <ErrorAlert message={error} />
@@ -73,7 +80,7 @@ const CopifyPage = ({ children }: { children: React.ReactNode }) => {
 
 const CopifyForm = () => {
   const { isPremium } = useAuth()
-  const { copify, getProjectFiles, files, isProjectsLoading, form } = useCopify()
+  const { process, getProjectFiles, files, isProjectsLoading, form } = useCopify()
   const [folderError, setFolderError] = useState<string | undefined>()
   const { setValue } = form
 
@@ -100,7 +107,7 @@ const CopifyForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(copify)} className="space-y-4 py-4">
+      <form onSubmit={form.handleSubmit(process)} className="space-y-4 py-4">
         <FormField
           control={form.control}
           name="folder"
@@ -182,26 +189,5 @@ const CopifyForm = () => {
         </div>
       </form>
     </Form>
-  )
-}
-
-const CopifyProgress = () => {
-  const { isRunning, progress, restart } = useCopify()
-  return (
-    <>
-      <p className={`pt-8 text-muted-foreground ${isRunning && 'animate-pulse'}`}>
-        {isRunning ? 'Copify in progress' : 'Copify finished'}
-      </p>
-      <If condition={progress > 0}>
-        <Progress value={progress} className="w-full my-4" />
-      </If>
-      <If condition={!isRunning}>
-        <div className="flex space-x-8">
-          <Button className="my-4" onClick={restart}>
-            Export another one!
-          </Button>
-        </div>
-      </If>
-    </>
   )
 }

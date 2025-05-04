@@ -4,10 +4,10 @@ import { Copify } from '@/app/copify/page'
 import Auth from '@/app/auth/page'
 import useAuth from '@/hooks/use-auth'
 import { Mover } from './app/mover/page'
-import { useMountedEffect } from './hooks/use-mounted-effect'
 import { If } from './utils/if'
 import { checkForUpdates } from './lib/check-updates'
 import { Spinner } from './components/spinner'
+import { useEffect } from 'react'
 
 const router = createBrowserRouter([
   {
@@ -28,7 +28,7 @@ const router = createBrowserRouter([
 function App() {
   const { user, initialLoading } = useAuth()
 
-  useMountedEffect(() => {
+  useEffect(() => {
     checkForUpdates(false)
   }, [])
 

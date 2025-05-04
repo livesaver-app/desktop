@@ -70,8 +70,14 @@ export default {
     			sm: 'calc(var(--radius) - 4px)'
     		},
     		fontFamily: {
-    			sans: ["var(--font-sans)", ...fontFamily.sans],
-    			roboto: ["Roboto", ...fontFamily.sans]
+    			sans: [
+    				'var(--font-sans)',
+                    ...fontFamily.sans
+                ],
+    			roboto: [
+    				'Roboto',
+                    ...fontFamily.sans
+                ]
     		},
     		keyframes: {
     			'accordion-down': {

@@ -1,8 +1,7 @@
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/supabaseClient'
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { Profile } from '@/types/profile'
-import { useMountedEffect } from './use-mounted-effect'
 
 interface IAuth {
   user: User | null
@@ -10,17 +9,15 @@ interface IAuth {
   signIn: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   loading: boolean
-  initialLoading: boolean
   isPremium: boolean
 }
 
 const AuthContext = createContext<IAuth>({
   user: null,
   profile: null,
-  signIn: async () => { },
-  logout: async () => { },
+  signIn: async () => {},
+  logout: async () => {},
   loading: false,
-  initialLoading: false,
   isPremium: false
 })
 
@@ -30,18 +27,16 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(false)
-  const [initialLoading, setInitialLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isPremium, setIsPremium] = useState<boolean>(false)
 
-  useMountedEffect(() => {
+  useEffect(() => {
     const getUser = async () => {
       const {
         data: { session }
       } = await supabase.auth.getSession()
       if (session) setUser(session.user)
-      setInitialLoading(false)
     }
 
     getUser()
@@ -55,9 +50,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [])
 
-  useMountedEffect(() => {
+  useEffect(() => {
     const getProfile = async () => {
-      setInitialLoading(true)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -68,7 +62,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setProfile(data)
         setIsPremium(data.subscription_plan === 'premium')
       }
-      setInitialLoading(false)
     }
     if (user) getProfile()
   }, [user])
@@ -102,7 +95,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const memoedValue = useMemo(
     () => ({
-      initialLoading,
       user,
       profile,
       isPremium,
@@ -110,7 +102,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       logout,
       loading
     }),
-    [user, profile, isPremium, loading, initialLoading]
+    [user, profile, isPremium, loading]
   )
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>

@@ -1,5 +1,5 @@
-import {Button} from '@/components/ui/button.tsx'
-import {open} from '@tauri-apps/plugin-dialog'
+import { Button } from '@/components/ui/button.tsx'
+import { open } from '@tauri-apps/plugin-dialog'
 import {
   Form,
   FormControl,
@@ -8,10 +8,9 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form.tsx'
-import {Input} from '@/components/ui/input.tsx'
-import {useEffect, useState} from 'react'
-import {listen} from '@tauri-apps/api/event'
-import {Progress} from '@/components/ui/progress.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import React, { useEffect, useState } from 'react'
+import { listen } from '@tauri-apps/api/event'
 import {
   MultiSelector,
   MultiSelectorContent,
@@ -20,27 +19,21 @@ import {
   MultiSelectorList,
   MultiSelectorTrigger
 } from '@/components/ui/multi-select'
-import {Loader2} from 'lucide-react'
-import {useMover} from '../hooks/use-mover'
-import {getFileNameFromPath} from '@/utils/file-utils'
-import {If} from '@/utils/if'
-import {Checker} from '@/components/form-checker'
-import {ErrorAlert} from '@/components/error-alert'
-
-export interface MoverProgress {
-  progress: number;
-  file_name: string;
-  is_error: boolean;
-  is_skipped: boolean;
-  error_message: string;
-}
+import { Loader2 } from 'lucide-react'
+import { useMover } from '../hooks/use-mover'
+import { getFileNameFromPath } from '@/utils/file-utils'
+import { If } from '@/utils/if'
+import { Checker } from '@/components/form-checker'
+import { ErrorAlert } from '@/components/error-alert'
+import { ProgressBar } from '@/components/progress-bar.tsx'
+import { IProgress } from '@/hooks/use-progress.tsx'
 
 export const MoverFormPage = () => {
-  const {error, isMoving, updateProgress} = useMover()
+  const { isRunning, progress, error, isProcessing, log, restart, updateProgress } = useMover()
 
   useEffect(() => {
     const unlisten = listen('mover-progress', (event) => {
-      updateProgress(event.payload as MoverProgress)
+      updateProgress(event.payload as IProgress)
     })
 
     return () => {
@@ -50,17 +43,23 @@ export const MoverFormPage = () => {
 
   return (
     <MoverPage>
-      <If condition={isMoving} fallback={<MoverForm/>}>
-        <MoverProgress/>
+      <If condition={isProcessing} fallback={<MoverForm />}>
+        <ProgressBar
+          process={'Mover'}
+          isRunning={isRunning}
+          progress={progress}
+          log={log}
+          restart={restart}
+        />
       </If>
       <If condition={!!error}>
-        <ErrorAlert message={error}/>
+        <ErrorAlert message={error} />
       </If>
     </MoverPage>
   )
 }
 
-const MoverPage = ({children}: { children: React.ReactNode }) => {
+const MoverPage = ({ children }: { children: React.ReactNode }) => {
   const description =
     "'Mover' copies project samples and moves project files to a target folder. Great for mass exporting project before moving to a new machine/hard drive. It is recommended to enable backups before starting a copify export."
 
@@ -73,16 +72,16 @@ const MoverPage = ({children}: { children: React.ReactNode }) => {
 }
 
 const MoverForm = () => {
-  const {mover, getProjectFiles, files, isProjectsLoading, form} = useMover()
+  const { process, getProjectFiles, files, isProjectsLoading, form } = useMover()
   const [folderError, setFolderError] = useState<string | undefined>()
-  const {setValue} = form
+  const { setValue } = form
 
   const chooseFolder = async (field: 'folder' | 'target') => {
     setFolderError(undefined)
     try {
       const directory = await open({
         directory: true,
-        filters: [{name: 'Ableton Live Project File', extensions: ['als']}],
+        filters: [{ name: 'Ableton Live Project File', extensions: ['als'] }],
         multiple: false
       })
       if (!directory) return
@@ -100,13 +99,14 @@ const MoverForm = () => {
     if (!directory) return
     await getProjectFiles(directory)
   }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(mover)} className="space-y-4 py-4">
+      <form onSubmit={form.handleSubmit(process)} className="space-y-4 py-4">
         <FormField
           control={form.control}
           name="folder"
-          render={({field}) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Folder</FormLabel>
               <FormControl>
@@ -118,14 +118,14 @@ const MoverForm = () => {
                   {...field}
                 />
               </FormControl>
-              <FormMessage/>
+              <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
           name="target"
-          render={({field}) => (
+          render={({ field }) => (
             <FormItem className="">
               <FormLabel>Target folder</FormLabel>
               <FormControl>
@@ -137,16 +137,16 @@ const MoverForm = () => {
                   {...field}
                 />
               </FormControl>
-              <FormMessage/>
+              <FormMessage />
             </FormItem>
           )}
         />
 
-        {!!folderError && <ErrorAlert message={folderError}/>}
+        {!!folderError && <ErrorAlert message={folderError} />}
         <FormField
           control={form.control}
           name="exclude_files"
-          render={({field}) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Projects to exclude</FormLabel>
               <FormControl>
@@ -154,11 +154,11 @@ const MoverForm = () => {
                   <MultiSelectorTrigger>
                     {isProjectsLoading ? (
                       <span className="text-xs italic flex animate-pulse text-muted-foreground">
-                        <Loader2 className="animate-spin mx-2 h-4 w-6"/>
+                        <Loader2 className="animate-spin mx-2 h-4 w-6" />
                         Scanning for .als files
                       </span>
                     ) : (
-                      <MultiSelectorInput className="text-xs" placeholder={`Search projects...`}/>
+                      <MultiSelectorInput className="text-xs" placeholder={`Search projects...`} />
                     )}
                   </MultiSelectorTrigger>
                   <MultiSelectorContent>
@@ -172,7 +172,7 @@ const MoverForm = () => {
                   </MultiSelectorContent>
                 </MultiSelector>
               </FormControl>
-              <FormMessage/>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -212,30 +212,5 @@ const MoverForm = () => {
         </div>
       </form>
     </Form>
-  )
-}
-
-// TODO: Make general progress component for all processes
-const MoverProgress = () => {
-  const {isRunning, progress, restart} = useMover()
-  console.log(progress)
-  return (
-    <>
-      <p className={`pt-8 text-muted-foreground ${isRunning && 'animate-pulse'}`}>
-        {isRunning ? 'Mover in progress' : 'Mover finished'}
-      </p>
-      <If condition={progress?.progress > 0}>
-        <Progress value={progress?.progress} className="w-full my-4"/>
-        {progress?.file_name}
-        {progress?.error_message}
-      </If>
-      <If condition={!isRunning}>
-        <div className="flex space-x-8">
-          <Button className="my-4" onClick={restart}>
-            Export another one!
-          </Button>
-        </div>
-      </If>
-    </>
   )
 }

@@ -197,3 +197,13 @@ pub fn is_backup_folder(path: &PathBuf) -> bool {
         .map(|name| name == "Backup")
         .unwrap_or(false)
 }
+
+pub fn should_run(file_path: &PathBuf, exclude: Vec<String>) -> bool {
+    if !exclude
+        .iter()
+        .any(|k| file_path.to_string_lossy().contains(k)) {
+        true
+    } else {
+        false
+    }
+}
