@@ -9,7 +9,7 @@ export interface IProgress {
   file_name: string
   is_error: boolean
   is_skipped: boolean
-  error_message: string
+  error_msg: string
 }
 
 type ProgressContextType<T extends FieldValues> = {
