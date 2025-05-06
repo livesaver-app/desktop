@@ -1,4 +1,4 @@
 mod models;
-mod mover;
+pub(crate) mod mover;
 
 pub use mover::*;

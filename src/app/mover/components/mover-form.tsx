@@ -9,9 +9,8 @@ import {
   FormMessage
 } from '@/components/ui/form.tsx'
 import { Input } from '@/components/ui/input.tsx'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { listen } from '@tauri-apps/api/event'
-import { Progress } from '@/components/ui/progress.tsx'
 import {
   MultiSelector,
   MultiSelectorContent,
@@ -26,13 +25,15 @@ import { getFileNameFromPath } from '@/utils/file-utils'
 import { If } from '@/utils/if'
 import { Checker } from '@/components/form-checker'
 import { ErrorAlert } from '@/components/error-alert'
+import { ProgressBar } from '@/components/progress-bar.tsx'
+import { IProgress } from '@/hooks/use-progress.tsx'
 
 export const MoverFormPage = () => {
-  const { error, isMoving, updateProgress } = useMover()
+  const { isRunning, progress, error, isProcessing, log, restart, updateProgress } = useMover()
 
   useEffect(() => {
     const unlisten = listen('mover-progress', (event) => {
-      updateProgress(event.payload as number)
+      updateProgress(event.payload as IProgress)
     })
 
     return () => {
@@ -42,8 +43,14 @@ export const MoverFormPage = () => {
 
   return (
     <MoverPage>
-      <If condition={isMoving} fallback={<MoverForm />}>
-        <MoverProgress />
+      <If condition={isProcessing} fallback={<MoverForm />}>
+        <ProgressBar
+          process={'Mover'}
+          isRunning={isRunning}
+          progress={progress}
+          log={log}
+          restart={restart}
+        />
       </If>
       <If condition={!!error}>
         <ErrorAlert message={error} />
@@ -65,7 +72,7 @@ const MoverPage = ({ children }: { children: React.ReactNode }) => {
 }
 
 const MoverForm = () => {
-  const { mover, getProjectFiles, files, isProjectsLoading, form } = useMover()
+  const { process, getProjectFiles, files, isProjectsLoading, form } = useMover()
   const [folderError, setFolderError] = useState<string | undefined>()
   const { setValue } = form
 
@@ -92,9 +99,10 @@ const MoverForm = () => {
     if (!directory) return
     await getProjectFiles(directory)
   }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(mover)} className="space-y-4 py-4">
+      <form onSubmit={form.handleSubmit(process)} className="space-y-4 py-4">
         <FormField
           control={form.control}
           name="folder"
@@ -204,27 +212,5 @@ const MoverForm = () => {
         </div>
       </form>
     </Form>
-  )
-}
-
-// TODO: Make general progress component for all processes
-const MoverProgress = () => {
-  const { isRunning, progress, restart } = useMover()
-  return (
-    <>
-      <p className={`pt-8 text-muted-foreground ${isRunning && 'animate-pulse'}`}>
-        {isRunning ? 'Mover in progress' : 'Mover finished'}
-      </p>
-      <If condition={progress > 0}>
-        <Progress value={progress} className="w-full my-4" />
-      </If>
-      <If condition={!isRunning}>
-        <div className="flex space-x-8">
-          <Button className="my-4" onClick={restart}>
-            Export another one!
-          </Button>
-        </div>
-      </If>
-    </>
   )
 }

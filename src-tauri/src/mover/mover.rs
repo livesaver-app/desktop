@@ -1,14 +1,15 @@
-use super::models::MoverSettings;
+use super::models::{MoverSettings};
 use crate::copify::*;
 use crate::utils::*;
 use tauri::Emitter;
+use crate::error::Error;
 
 #[tauri::command]
-pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(), String> {
+pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(), Error> {
     let files = find_by_extension(settings.folder.as_str(), ALS);
 
     if files.is_empty() {
-        return Err("No Ableton Live project files found".to_string());
+        return Err(Error::FileNotFound("No Ableton Live project files found".to_string()));
     }
 
     let copify_settings = CopifySettings {
@@ -23,19 +24,23 @@ pub async fn mover(window: tauri::Window, settings: MoverSettings) -> Result<(),
         files.clone(),
         settings.target.as_str(),
         settings.move_project_files,
-    );
+    )?;
+
+    let progress_name = "mover-progress";
 
     for (i, file_path) in paths.iter().enumerate() {
-        if !settings
-            .exclude_files
-            .iter()
-            .any(|k| file_path.to_string_lossy().contains(k))
-        {
-            run_copify(file_path, &copify_settings).ok();
-        }
-        window
-            .emit("mover-progress", ((i + 1) * 100) / paths.len())
-            .unwrap();
+        let progress_value = ((i + 1) * 100) / paths.len();
+        let file_name_str = file_path.to_string_lossy().to_string();
+
+        if should_run(file_path, settings.exclude_files.to_vec()) {
+            let progress = match run_copify(file_path, &copify_settings) {
+                Ok(_) => on_success(file_name_str.clone(), progress_value),
+                Err(e) => on_error(file_name_str.clone(), progress_value, e.to_string())
+            };
+            window.emit(progress_name, progress).unwrap()
+        } else {
+            window.emit(progress_name, on_skip(file_name_str.clone(), progress_value)).unwrap()
+        };
     }
     Ok(())
 }

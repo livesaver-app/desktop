@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ClipboardCopy, House, Map, ArrowRightLeft, Send } from 'lucide-react'
+import { ClipboardCopy, House, ArrowRightLeft, Send } from 'lucide-react'
 import { NavProjects } from '@/components/nav-projects'
 import {
   Sidebar,
@@ -44,13 +44,13 @@ const data = {
       url: '/mover',
       icon: ArrowRightLeft,
       disabled: false
-    },
-    {
-      name: 'Backup',
-      url: 'backup',
-      icon: Map,
-      disabled: true
     }
+    /* {
+       name: 'Backup',
+       url: 'backup',
+       icon: Map,
+       disabled: true
+     }*/
   ]
 }
 
