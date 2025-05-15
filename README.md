@@ -1,49 +1,48 @@
-# 🎵 LiveSaver
+<img src="./assets/icon.ico" width="100px" align="left">
 
-![LiveSaver Logo](assets/icon.ico)  
-**Open-source Ableton Live sample export and organization tool**
+### `LiveSaver`
 
----
+[![Downloads](https://img.shields.io/github/downloads/livesaver-app/desktop/total.svg)](https://github.com/livesaver-app/desktop/releases)
+[![LiveSaver Release builds](https://github.com/livesaver-app/desktop/actions/workflows/publish.yaml/badge.svg?branch=main)](https://github.com/livesaver-app/desktop/actions/workflows/publish.yaml)
 
-## 🚀 Overview
+<br />
+✨ A companion app for Ableton Live. Seamlessly export, organize and migrate your projects.
 
-LiveSaver is an open-source application designed to **export, sort, and organize sample files** for seamless project transfers in **Ableton Live**. Whether you're collaborating with other producers or moving projects between computers, this tool ensures a hassle-free experience.
+<div flex="true">
+  <a href="https://livesaver.app/account/download">
+    Download
+  </a>
+  •
+  <a href="https://livesaver.app">
+    Website
+  </a>
+</div>
 
 ## 🔧 Features
 
-✅ Export all project samples in a structured format  
-✅ Automatically sort and rename files for better organization  
-✅ Ensure seamless transfers between computers and collaborators
+- Export all project samples to project folder
+- Move or copy project folder with all samples to desired location
 
 ## 📥 Installation
 
-### **Download & Install**
-
-LiveSaver is available for **Linux, macOS, and Windows**. Download the latest release from our [GitHub Releases](https://github.com/livesaver-io/desktop/releases) page and install it on your system.
+Download from account page or GitHub releases page.
 
 ## 💡 Usage
 
-1. Open Ableton Live
-2. Launch LiveSaver
-3. Export your project samples with one click
-4. Transfer files seamlessly between computers or collaborators
-
-## 🛠 Contributing
-
-We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
+1. Launch LiveSaver
+2. Export your project samples with one click
+3. Transfer files seamlessly between computers or collaborators
 
 ## 🐛 Reporting Issues
 
-If you find a bug or have a feature request, please open an [issue](https://github.com/livesaver-io/desktop/issues).
+If you find a bug or have a feature request, please open an [issue](https://github.com/livesaver-app/desktop/issues).
 
-## 📜 License
+## 🚀 Development
 
-This project is licensed under the [MIT License](LICENSE).
+> Requires Rust and Node installed. Follow [Tauri's guide](https://v2.tauri.app/start/prerequisites/) to set up your
+> environment.
 
-## 🌎 Community & Support
-
-- Join the discussion on [Discord](#)
-
----
-
-🚀 **Make your music collaboration and project transfers effortless with LiveSaver!**
+```cmd
+npm install
+npm run tauri dev
+```
