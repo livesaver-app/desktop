@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronsUpDown, CreditCard, LogOut, Recycle, Sparkles } from 'lucide-react'
+import { BadgeCheck, ChevronsUpDown, LogOut, Recycle, Sparkles } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -99,15 +99,15 @@ export function NavUser() {
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              {isPremium && (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => open(appUrl + '/account/billing')}
-                >
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-              )}
+              {/* {isPremium && ( */}
+              {/*   <DropdownMenuItem */}
+              {/*     className="cursor-pointer" */}
+              {/*     onClick={() => open(appUrl + '/account/billing')} */}
+              {/*   > */}
+              {/*     <CreditCard /> */}
+              {/*     Billing */}
+              {/*   </DropdownMenuItem> */}
+              {/* )} */}
               <DropdownMenuItem className="cursor-pointer" onClick={() => checkForUpdates(true)}>
                 <Recycle />
                 Check for updates

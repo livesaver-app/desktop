@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [isPremium, setIsPremium] = useState<boolean>(false)
+  const [isPremium] = useState<boolean>(true) // As of now, all features are opened
 
   useEffect(() => {
     const getUser = async () => {
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (error) console.error(error)
       if (data) {
         setProfile(data)
-        setIsPremium(data.subscription_plan === 'premium')
+        // setIsPremium(data.subscription_plan === 'premium')
       }
     }
     if (user) getProfile()
